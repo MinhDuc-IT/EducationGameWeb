@@ -129,7 +129,7 @@ function SheepIntro({ onLogout }) {
 
       <div style={styles.field}>
         <GameSummary summary={summaryStats} />
-        
+
         <h1 style={styles.title}>Welcome to Sheep Counting Game!</h1>
         <AnimatePresence>
           <motion.div
@@ -148,16 +148,14 @@ function SheepIntro({ onLogout }) {
         Logout
       </button>
 
-      {latestStats && latestStats.seconds != null && (
-        <GameStats
-          elapsedSeconds={latestStats.seconds}
-          round={latestStats.maxRounds}
-          maxRounds={latestStats.maxRounds}
-          correctFirstTryCount={latestStats.correctFirstTry}
-          correctSecondTryCount={latestStats.correctSecondTry}
-          isStaticTime={true}
-        />
-      )}
+      <GameStats
+        elapsedSeconds={latestStats?.seconds ?? 0}
+        round={latestStats?.maxRounds ?? 0}
+        maxRounds={latestStats?.maxRounds ?? 0}
+        correctFirstTryCount={latestStats?.correctFirstTry ?? 0}
+        correctSecondTryCount={latestStats?.correctSecondTry ?? 0}
+        isStaticTime={true}
+      />
     </div>
   );
 }

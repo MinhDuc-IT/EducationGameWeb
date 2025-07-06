@@ -38,11 +38,15 @@ function GameStats({
 
   // Effect phát hiện điểm tăng
   useEffect(() => {
-    const diff = score - lastScore;
-    setBonus(`+${diff}`);
-    console.log("Score diff:", diff);
-    setTimeout(() => setBonus(null), 1200);
-    setLastScore(score);
+    if (!isStaticTime) {
+      const diff = score - lastScore;
+      if (diff > 0) {
+        setBonus(`+${diff}`);
+        console.log("Score diff:", diff);
+        setTimeout(() => setBonus(null), 1200);
+        setLastScore(score);
+      }
+    }
   }, [score]);
 
   return (
@@ -117,12 +121,19 @@ const styles = {
   },
   bonus: {
     marginLeft: "10px",
-    color: "rgba(232, 232, 0, 0.8)",
+    //color: "rgba(232, 232, 0, 0.8)",
+    color: "#ffeb3b",
+  textShadow: `
+    -1px -1px 1px #000,
+     1px -1px 1px #000,
+    -1px  1px 1px #000,
+     1px  1px 1px #000
+  `,
     fontWeight: "bold",
     fontSize: "2rem",
     position: "absolute",
     right: "2vw",
-    animation: "popFade 1.6s ease-out",
+    animation: "popFade 3s ease-out",
     textShadow: "2px 2px #fff",
   },
   title: {

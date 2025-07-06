@@ -1,9 +1,11 @@
 import React from "react";
 
 function GameSummary({ summary }) {
-  if (!summary) {
-    return <div style={styles.message}>Let's play!</div>;
-  }
+  const actualSummary = summary || {
+    totalSeconds: 0,
+    totalScore: 0,
+    accuracy: 0,
+  };
 
   const formatSeconds = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -23,9 +25,9 @@ function GameSummary({ summary }) {
         </thead>
         <tbody>
           <tr>
-            <td style={styles.cell}>{formatSeconds(summary.totalSeconds)}</td>
-            <td style={styles.cell}>{summary.totalScore}</td>
-            <td style={styles.cell}>{(summary.accuracy * 100).toFixed(1)}%</td>
+            <td style={styles.cell}>{formatSeconds(actualSummary.totalSeconds)}</td>
+            <td style={styles.cell}>{actualSummary.totalScore}</td>
+            <td style={styles.cell}>{(actualSummary.accuracy * 100).toFixed(1)}%</td>
           </tr>
         </tbody>
       </table>
