@@ -6,6 +6,9 @@ import SoundToggleButton from "../components/SoundToggleButton";
 import Character from "../components/Character";
 import Sheep from "../components/Sheep";
 import Option from "../components/Option";
+import api from "../services/api";
+import ConfirmModal from "../components/ConfirmModal";
+import GameStats from "../components/GameStats";
 
 const names = ["Luna", "Max", "Olivia", "Leo", "Emma", "Noah", "Mia", "Ethan"];
 const characterImages = {
@@ -19,7 +22,7 @@ const characterImages = {
   Ethan: "/images/character-ethan.png",
 };
 
-const MAX_ROUNDS = 2;
+const MAX_ROUNDS = 5;
 
 function SheepCountingGame() {
   const navigate = useNavigate();
@@ -37,9 +40,16 @@ function SheepCountingGame() {
   const [shouldSpeakIntro, setShouldSpeakIntro] = useState(false);
   const [hideCorrectAnswer, setHideCorrectAnswer] = useState(false);
   const [showCharacter, setShowCharacter] = useState(true);
+  const [startTime, setStartTime] = useState(null);
+  const [correctFirstTryCount, setCorrectFirstTryCount] = useState(0);
+  const [correctSecondTryCount, setCorrectSecondTryCount] = useState(0);
+  const [totalWrongCount, setTotalWrongCount] = useState(0);
+  const [currentWrongCount, setCurrentWrongCount] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     startNewRound();
+    setStartTime(new Date().toISOString()); // khi component mount, lưu thời gian bắt đầu
   }, []);
 
   useEffect(() => {
@@ -75,11 +85,51 @@ function SheepCountingGame() {
     window.speechSynthesis.speak(utter);
   };
 
+  const submitGameSession = async (
+    //userId,
+    startTime,
+    endTime,
+    gameType = "SheepCounting",
+    maxRounds,
+    correctFirstTry,
+    correctSecondTry,
+    totalWrongAnswers
+  ) => {
+    try {
+      console.log("Submitting game session...");
+      //console.log("User ID:", userId);
+      console.log("Start Time:", startTime);
+      console.log("End Time:", endTime);
+      console.log("Game Type:", gameType);
+      console.log("Max Rounds:", maxRounds);
+      console.log("Correct First Try Count:", correctFirstTry);
+      console.log("Correct Second Try Count:", correctSecondTry);
+      console.log("Total Wrong Answers Count:", totalWrongAnswers);
+
+      await api.post("/GameSession/create", {
+        //userId,
+        startTime,
+        endTime,
+        gameType,
+        maxRounds,
+        correctFirstTry,
+        correctSecondTry,
+        totalWrongAnswers,
+      });
+    } catch (error) {
+      console.error("Error submitting game session:", error);
+    }
+  };
+
   const startNewRound = () => {
     if (round > MAX_ROUNDS) {
       speak("Great job!", 1.1, 1.6);
       setTimeout(() => {
-        speak("You counted all the sheep! Do you want to play again?", 1.1, 1.6);
+        speak(
+          "You counted all the sheep! Do you want to play again?",
+          1.1,
+          1.6
+        );
         navigate("/sheep-intro");
       }, 2000);
       return;
@@ -161,7 +211,8 @@ function SheepCountingGame() {
           newClicked.some((clickedIdx) => {
             const clickedPos = sheepPositions[clickedIdx];
             return (
-              Math.abs(parseFloat(clickedPos.left) - parseFloat(newPos.left)) < 12 &&
+              Math.abs(parseFloat(clickedPos.left) - parseFloat(newPos.left)) <
+                12 &&
               Math.abs(parseFloat(clickedPos.top) - parseFloat(newPos.top)) < 12
             );
           })
@@ -178,43 +229,83 @@ function SheepCountingGame() {
   };
 
   const handleOptionClick = (number) => {
+    let newTotalWrongCount = totalWrongCount;
     if (!showOptions) return;
     if (number === count) {
       playSound("/sounds/success.mp3", 1);
       setTimeout(() => speak("Exactly!", 1, 1.8), 1000);
       setMessage("🎉 Exactly!");
       setSelectedWrong(options.filter((opt) => opt !== number));
+
+      let newFirstTryCount = correctFirstTryCount;
+      let newSecondTryCount = correctSecondTryCount;
+
+      if (currentWrongCount === 0) {
+        newFirstTryCount += 1;
+        setCorrectFirstTryCount(newFirstTryCount);
+        console.log("Correct on first try:", newFirstTryCount);
+      } else if (currentWrongCount === 1) {
+        newSecondTryCount += 1;
+        setCorrectSecondTryCount(newSecondTryCount);
+        console.log("Correct on second try:", newSecondTryCount);
+      }
+
+      setCurrentWrongCount(0); // reset cho vòng sau
+
       setTimeout(() => setHideCorrectAnswer(true), 1500);
 
-      // setTimeout(() => setShowCharacter(false), 1800); // trigger exit
-      // setTimeout(() => {
-      //   setMessage("");
-      //   setRound((prev) => prev + 1);
-      //   startNewRound();
-      // }, 2200);
-
       if (round >= MAX_ROUNDS) {
-      setTimeout(() => {
-        speak("Great job!", 1.1, 1.6);
+        const endTime = new Date().toISOString(); // thời gian kết thúc
+        //const userId = localStorage.getItem("userId");
+
+        console.log("Game completed. Submitting results...");
+        //console.log("User ID:", userId);
+        console.log("Start Time:", startTime);
+        console.log("End Time:", endTime);
+        console.log("Correct First Try Count:", correctFirstTryCount);
+        console.log("Correct Second Try Count:", correctSecondTryCount);
+        console.log("Total Wrong Count:", totalWrongCount);
+
+        submitGameSession(
+          //userId,
+          startTime,
+          endTime,
+          "SheepCounting",
+          MAX_ROUNDS,
+          newFirstTryCount,
+          newSecondTryCount,
+          newTotalWrongCount
+        );
+
         setTimeout(() => {
-          speak("You counted all the sheep! Do you want to play again?", 1.1, 1.6);
-          navigate("/sheep-intro");
-        }, 2000);
-      }, 1800);
-    } else {
-      // Animate thoát
-      setTimeout(() => setShowCharacter(false), 1800);
-      setTimeout(() => {
-        setMessage("");
-        setRound((prev) => prev + 1);
-        startNewRound();
-      }, 2200);
-    }
+          speak("Great job!", 1.1, 1.6);
+          setTimeout(() => {
+            speak(
+              "You counted all the sheep! Do you want to play again?",
+              1.1,
+              1.6
+            );
+            navigate("/sheep-intro");
+          }, 2000);
+        }, 1800);
+      } else {
+        // Animate thoát
+        setTimeout(() => setShowCharacter(false), 1800);
+        setTimeout(() => {
+          setMessage("");
+          setRound((prev) => prev + 1);
+          startNewRound();
+        }, 2200);
+      }
     } else {
       playSound("/sounds/fail.mp3", 1);
       setTimeout(() => speak("Try again", 1.0, 1.2), 1000);
       setMessage("❌ Try again");
       setSelectedWrong([...selectedWrong, number]);
+      setCurrentWrongCount((prev) => prev + 1);
+      setTotalWrongCount((prev) => prev + 1);
+      newTotalWrongCount = totalWrongCount + 1;
+      console.log("Total wrong count:", newTotalWrongCount);
     }
   };
 
@@ -224,8 +315,22 @@ function SheepCountingGame() {
     audio.play().catch((err) => console.error("Error playing audio:", err));
   };
 
+  const handleExitClick = () => {
+    const confirmed = window.confirm(
+      "Do you want to cancel this game session? Your progress will not be saved."
+    );
+    if (confirmed) {
+      navigate("/sheep-intro");
+    }
+  };
+
   return (
     <div style={styles.container}>
+      <img
+        src="/images/sheep-left.png"
+        alt="Sheep Left"
+        style={styles.sheepLeft}
+      />
       <motion.div
         key={name + round + "-question"}
         initial={{ x: -500, opacity: 0 }}
@@ -297,6 +402,23 @@ function SheepCountingGame() {
 
         <SoundToggleButton />
       </div>
+      <GameStats
+        startTime={startTime}
+        round={round}
+        maxRounds={MAX_ROUNDS}
+        correctFirstTryCount={correctFirstTryCount}
+        correctSecondTryCount={correctSecondTryCount}
+      />
+
+      <button onClick={() => setShowConfirmModal(true)} style={styles.button}>
+        ⬅ Exit
+      </button>
+      <ConfirmModal
+        visible={showConfirmModal}
+        message="Do you want to cancel this game session? Your progress will not be saved."
+        onConfirm={() => navigate("/sheep-intro")}
+        onCancel={() => setShowConfirmModal(false)}
+      />
     </div>
   );
 }
@@ -311,6 +433,16 @@ const styles = {
     height: "100vh",
     backgroundImage: "url(/images/grass.png)",
     backgroundPosition: "center",
+  },
+  sheepLeft: {
+    position: "absolute",
+    left: "0%",
+    top: "25%",
+    width: "20vw",
+    height: "auto",
+    zIndex: 1,
+    filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))",
+    transition: "transform 0.3s ease",
   },
   characterImg: {
     position: "absolute",
@@ -342,6 +474,7 @@ const styles = {
     borderRadius: "12px",
     overflow: "hidden",
     border: "5px solid rgb(69, 201, 75)",
+    boxShadow: "0 5px 10px rgba(0,0,0,0.3)",
   },
   options: {
     position: "absolute",
@@ -352,7 +485,85 @@ const styles = {
     gap: "30px",
     zIndex: 10,
   },
+  button: {
+    position: "absolute",
+    top: "10%",
+    left: "3%",
+    transform: "translate(50%, -50%)",
+    padding: "12px 24px",
+    fontSize: "1.2rem",
+    backgroundColor: "#f97316",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+    transition: "background-color 0.3s",
+    borderRadius: "50%",
+  },
+  buttonHover: {
+    backgroundColor: "#00FF00",
+  },
+  backButton: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    backgroundColor: "#4caf50",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "10px 16px",
+    fontSize: "16px",
+    cursor: "pointer",
+    zIndex: 100,
+    boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+  },
+
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 999,
+  },
+
+  modalBox: {
+    backgroundColor: "#fff",
+    padding: "30px 25px",
+    borderRadius: "12px",
+    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+    width: "90%",
+    maxWidth: "400px",
+    textAlign: "center",
+  },
+
+  modalText: {
+    fontSize: "18px",
+    marginBottom: "20px",
+    color: "#333",
+  },
+
+  modalActions: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "16px",
+  },
+
+  modalButton: {
+    flex: 1,
+    padding: "10px 0",
+    fontSize: "16px",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
+  },
 };
 
 export default SheepCountingGame;
-

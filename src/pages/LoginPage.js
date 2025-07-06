@@ -1,67 +1,3 @@
-// import { useState } from 'react';
-
-// function LoginPage({ onLogin }) {
-//   const [username, setUsername] = useState('');
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (username.trim()) {
-//       onLogin();
-//       speak(`Sheep Counting Game`, 1, 1.5);
-//     }
-//   };
-
-//   const speak = (text, rate = 1, pitch = 1) => {
-//     window.speechSynthesis.cancel();
-//     const utter = new SpeechSynthesisUtterance(text);
-//     utter.lang = "en-US";
-//     utter.rate = rate;
-//     utter.pitch = pitch;
-//     const voices = window.speechSynthesis.getVoices();
-//     const preferredVoice = voices.find(
-//       (v) =>
-//         v.name.includes("Google UK English Male") ||
-//         (v.name.includes("Microsoft David") && v.lang === "en-US")
-//     );
-//     if (preferredVoice) utter.voice = preferredVoice;
-//     window.speechSynthesis.speak(utter);
-//   };
-
-//   return (
-//     <div className="login-container">
-//       <h2>Welcome to Birthday Candle Game 🎂</h2>
-//       <form onSubmit={handleSubmit}>
-//         <input
-//           type="text"
-//           placeholder="Enter your Nickname..."
-//           value={username}
-//           onChange={(e) => setUsername(e.target.value)}
-//         />
-//         <button type="submit">Login</button>
-//       </form>
-//     </div>
-//   );
-// }
-
-// export default LoginPage;
-
-// const styles = {
-//   container: {
-//     textAlign: 'center',
-//     marginTop: '100px'
-//   },
-//   input: {
-//     padding: '10px',
-//     fontSize: '1rem',
-//     marginRight: '10px'
-//   },
-//   button: {
-//     padding: '10px 20px',
-//     fontSize: '1rem',
-//     cursor: 'pointer'
-//   }
-// };
-
 // src/pages/LoginPage.jsx
 import { useState } from "react";
 import api from "../services/api"; // Giả sử đã setup axios ở đây
@@ -105,40 +41,16 @@ function LoginPage({ onLogin }) {
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       // Bạn có thể lưu userId nếu muốn:
-      localStorage.setItem("userId", res.data.userId);
+      //localStorage.setItem("userId", res.data.userId);
 
       speak("Sheep Counting Game", 1, 1.5);
       onLogin?.();
-      navigate("/sheep-intro");
+      //navigate("/sheep-intro");
     } catch (err) {
       setError("Login failed. Please try again.");
       console.error("Login error:", err.message);
     }
   };
-
-  // return (
-  //   <div className="login-container">
-  //     <h2>Welcome to Sheep Counting Game 🐑</h2>
-  //     <form onSubmit={handleSubmit}>
-  //       <input
-  //         type="text"
-  //         placeholder="Enter your username..."
-  //         value={username}
-  //         onChange={(e) => setUsername(e.target.value)}
-  //         required
-  //       />
-  //       <input
-  //         type="password"
-  //         placeholder="Enter your password..."
-  //         value={password}
-  //         onChange={(e) => setPassword(e.target.value)}
-  //         required
-  //       />
-  //       <button type="submit">Login</button>
-  //       {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-  //     </form>
-  //   </div>
-  // );
 
   return (
     <div style={styles.container}>
@@ -173,14 +85,18 @@ export default LoginPage;
 
 const styles = {
   container: {
+    fontFamily: "Comic Sans MS, sans-serif",
     minHeight: "100vh",
-    background: "linear-gradient(to top, #c2f0c2, #a3e4ff)",
+    padding: "10px",
+    textAlign: "center",
+    position: "relative",
+    height: "100vh",
+    backgroundImage: "url(/images/grass.png)",
+    backgroundPosition: "center",
+    justifyContent: "center",
+    alignItems: "center",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "'Comic Sans MS', cursive, sans-serif",
-    padding: "20px",
   },
   heading: {
     fontSize: "28px",

@@ -67,7 +67,6 @@ function SoundToggleButton() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000,
         cursor: "pointer",
       }}
       onClick={toggleMute}

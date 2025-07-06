@@ -4,8 +4,11 @@ import SoundToggleButton from "../components/SoundToggleButton";
 import { motion, AnimatePresence } from "framer-motion";
 import PlayButton from "../components/PlayButton";
 import { useEffect, useState } from "react";
+import api from "../services/api";
+import GameStats from "../components/GameStats";
+import GameSummary from "../components/GameSummary";
 
-function SheepIntro() {
+function SheepIntro({ onLogout }) {
   const navigate = useNavigate();
 
   const speak = (text, rate = 1, pitch = 1) => {
@@ -24,81 +27,89 @@ function SheepIntro() {
     window.speechSynthesis.speak(utter);
   };
 
+  const [latestStats, setLatestStats] = useState(null);
+
   useEffect(() => {
-    // setTimeout(() => {
-    //     speak(`Sheep Counting Game`, 1, 1.5);
-    //   }, 1000);
+    const fetchLatestStats = async () => {
+      try {
+        const res = await api.get("/GameSession/latest-session");
+        if (!res.data) {
+          console.warn("No latest session found");
+          setLatestStats(null);
+          return;
+        }
+        setLatestStats(res.data);
+      } catch (error) {
+        console.error("Failed to load latest session:", error);
+      }
+    };
+
+    fetchLatestStats();
   }, []);
 
-  const styles = {
-    container: {
-      fontFamily: "Comic Sans MS, sans-serif",
-      minHeight: "100vh",
-      padding: "20px",
-      textAlign: "center",
-      position: "relative",
-      height: "100vh",
-      backgroundImage: "url(/images/grass.png)",
-      backgroundPosition: "center",
-    },
-    field: {
-      position: "relative",
-      width: "60vw",
-      margin: "0 auto",
-      height: "80vh",
-      backgroundImage: `url(/images/sheepIntro.png), url(/images/grass.png)`,
-      backgroundSize: "40vw, cover", // sheepIntro giữ nguyên kích thước, grass trải rộng
-      backgroundRepeat: "no-repeat, no-repeat",
-      backgroundPosition: "center bottom, center",
-      borderRadius: "12px",
-      overflow: "hidden",
-      border: "5px solid rgb(69, 201, 75)",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    title: {
-      fontSize: "2rem",
-      marginTop: "-42vh",
-      color: "#fff",
-      textShadow: "2px 2px 4px #000",
-    },
-    button: {
-      padding: "12px 24px",
-      fontSize: "1.2rem",
-      backgroundColor: "#4caf50",
-      color: "#fff",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-      transition: "background-color 0.3s",
-    },
-    buttonHover: {
-      backgroundColor: "#45a049",
-    },
-    question: {
-      fontSize: "1.8rem",
-      marginBottom: "20px",
-      color: "#2e7d32",
-    },
-    instruction: {
-      fontSize: "1rem",
-      color: "#444",
-      marginTop: "20px",
-    },
+  const [summaryStats, setSummaryStats] = useState(null);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const res = await api.get("/GameSession/summary");
+        setSummaryStats(res.data);
+      } catch (error) {
+        console.error("Failed to fetch summary stats:", error);
+      }
+    };
+
+    fetchSummary();
+  }, []);
+
+  const logout = async () => {
+    try {
+      console.log("Logging out...");
+
+      //const userId = localStorage.getItem("userId");
+      //console.log("User ID:", userId);
+
+      await api.post("/Auth/logout");
+
+      // Xóa localStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      //localStorage.removeItem("userId");
+
+      onLogout?.(); // sẽ setIsLoggedIn(false)
+      navigate("/"); // quay lại login
+
+      console.log("Logout successful");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
   };
 
   return (
     <div style={styles.container}>
+      {/* <img
+        src="/images/sheep-left.png"
+        alt="Sheep Left"
+        style={styles.sheepLeft}
+        /> */}
+
+      <motion.img
+        src="/images/sheep-left.png"
+        alt="Sheep Left"
+        initial={{ x: -500, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -500, opacity: 0 }}
+        transition={{ duration: 1.5 }}
+        style={styles.sheepLeft}
+      />
+
       {/* Câu hỏi (hiệu ứng từ trái vào) */}
       <motion.div
         key="intro-question"
         initial={{ x: -500, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: -500, opacity: 0 }}
-        transition={{ duration: 2.5 }}
+        transition={{ duration: 2.0 }}
         style={styles.question}
       >
         Are you ready to count some sheep?
@@ -107,16 +118,18 @@ function SheepIntro() {
       {/* Hướng dẫn (hiệu ứng từ dưới lên) */}
       <motion.div
         key="intro-instruction"
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
-        transition={{ duration: 1 }}
+        initial={{ x: -500, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -500, opacity: 0 }}
+        transition={{ duration: 2.5 }}
         style={styles.instruction}
       >
         Click the button below to start your adventure!
       </motion.div>
 
       <div style={styles.field}>
+        <GameSummary summary={summaryStats} />
+        
         <h1 style={styles.title}>Welcome to Sheep Counting Game!</h1>
         <AnimatePresence>
           <motion.div
@@ -131,8 +144,113 @@ function SheepIntro() {
         </AnimatePresence>
         <SoundToggleButton />
       </div>
+      <button style={styles.button} onClick={logout}>
+        Logout
+      </button>
+
+      {latestStats && latestStats.seconds != null && (
+        <GameStats
+          elapsedSeconds={latestStats.seconds}
+          round={latestStats.maxRounds}
+          maxRounds={latestStats.maxRounds}
+          correctFirstTryCount={latestStats.correctFirstTry}
+          correctSecondTryCount={latestStats.correctSecondTry}
+          isStaticTime={true}
+        />
+      )}
     </div>
   );
 }
 
 export default SheepIntro;
+
+const styles = {
+  container: {
+    fontFamily: "Comic Sans MS, sans-serif",
+    minHeight: "100vh",
+    padding: "20px",
+    textAlign: "center",
+    position: "relative",
+    height: "100vh",
+    backgroundImage: "url(/images/grass.png)",
+    backgroundPosition: "center",
+  },
+  sheepLeft: {
+    position: "absolute",
+    left: "0%",
+    top: "25%",
+    width: "20vw",
+    height: "auto",
+    zIndex: 1,
+    filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))",
+    transition: "transform 0.3s ease",
+  },
+  field: {
+    position: "relative",
+    width: "60vw",
+    margin: "0 auto",
+    height: "80vh",
+    backgroundImage: `url(/images/sheepIntro.png), url(/images/grass.png)`,
+    backgroundSize: "40vw, cover", // sheepIntro giữ nguyên kích thước, grass trải rộng
+    backgroundRepeat: "no-repeat, no-repeat",
+    backgroundPosition: "center bottom, center",
+    borderRadius: "12px",
+    overflow: "hidden",
+    border: "5px solid rgb(69, 201, 75)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    boxShadow: "0 5px 10px rgba(0,0,0,0.3)",
+  },
+  title: {
+    fontSize: "2rem",
+    marginTop: "-42vh",
+    color: "#fff",
+    textShadow: "2px 2px 4px #000",
+  },
+  button: {
+    position: "absolute",
+    top: "10%",
+    left: "3%",
+    transform: "translate(50%, -50%)",
+    padding: "12px 24px",
+    fontSize: "1.2rem",
+    backgroundColor: "#4caf50",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+    transition: "background-color 0.3s",
+  },
+  buttonHover: {
+    backgroundColor: "#00FF00",
+  },
+  question: {
+    fontSize: "1.8rem",
+    marginBottom: "20px",
+    color: "#2e7d32",
+  },
+  instruction: {
+    fontSize: "1rem",
+    color: "#444",
+    marginTop: "20px",
+  },
+  logoutButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    borderRadius: "10px",
+    cursor: "pointer",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+    transition: "all 0.3s ease-in-out",
+    fontFamily: "Comic Sans MS, sans-serif",
+  },
+  logoutButtonHover: {
+    backgroundColor: "#d32f2f",
+    transform: "scale(1.05)",
+  },
+};

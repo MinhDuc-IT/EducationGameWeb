@@ -31,3 +31,4 @@ function Sheep({ index, pos, clicked, onClick }) {
 }
 
 export default Sheep;
+

@@ -62,7 +62,7 @@ api.interceptors.response.use(
 
       try {
         const res = await axios.post("https://localhost:7101/api/auth/refresh-token", {
-          userId: localStorage.getItem("userId"),
+          //userId: localStorage.getItem("userId"),
           refreshToken: localStorage.getItem("refreshToken"),
         });
 
@@ -82,7 +82,7 @@ api.interceptors.response.use(
         isRefreshing = false;
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        localStorage.removeItem("userId");
+        //localStorage.removeItem("userId");
         window.location.href = "/login"; // chuyển hướng nếu refresh thất bại
         return Promise.reject(err);
       }
