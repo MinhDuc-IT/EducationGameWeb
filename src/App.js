@@ -14,6 +14,7 @@ import PrivateRoute from "./PrivateRoot";
 import SheepColorIntro from "./pages/SheepColorIntro";
 import SheepColorCountingGame from "./pages/SheepColorCountingGame";
 import Home from "./pages/Home";
+import GameMap from "./pages/GameMap";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -32,7 +33,7 @@ function App() {
             path="/"
             element={
               isLoggedIn ? (
-                <Navigate to="/home" replace />
+                <Navigate to="/game-map" replace />
               ) : (
                 <LoginPage onLogin={() => setIsLoggedIn(true)} />
               )
@@ -58,7 +59,7 @@ function App() {
             path="/sheep-intro"
             element={
               <PrivateRoute>
-                <SheepIntro onLogout={() => setIsLoggedIn(false)} />
+                <SheepIntro />
               </PrivateRoute>
             }
           />
@@ -66,7 +67,7 @@ function App() {
             path="/sheep-color-intro"
             element={
               <PrivateRoute>
-                <SheepColorIntro onLogout={() => setIsLoggedIn(false)} />
+                <SheepColorIntro />
               </PrivateRoute>
             }
           />
@@ -75,6 +76,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SheepColorCountingGame />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/game-map"
+            element={
+              <PrivateRoute>
+                <GameMap onLogout={() => setIsLoggedIn(false)} />
               </PrivateRoute>
             }
           />

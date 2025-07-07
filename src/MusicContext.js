@@ -68,7 +68,7 @@ export function MusicProvider({ children }) {
     const shouldPlay =
       location.pathname === '/game-intro' ||
       location.pathname.startsWith('/sheep') ||
-      location.pathname === '/birthday-game';
+      location.pathname === '/game-map';
 
     if (shouldPlay) {
       audio.loop = true;

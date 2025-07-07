@@ -9,7 +9,7 @@ import GameStats from "../components/GameStats";
 import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
-function SheepIntro({ onLogout }) {
+function SheepIntro() {
   const navigate = useNavigate();
 
   const speak = (text, rate = 1, pitch = 1) => {
@@ -67,29 +67,6 @@ function SheepIntro({ onLogout }) {
 
     fetchSummary();
   }, []);
-
-  const logout = async () => {
-    try {
-      console.log("Logging out...");
-
-      //const userId = localStorage.getItem("userId");
-      //console.log("User ID:", userId);
-
-      await api.post("/Auth/logout");
-
-      // Xóa localStorage
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      //localStorage.removeItem("userId");
-
-      onLogout?.(); // sẽ setIsLoggedIn(false)
-      navigate("/"); // quay lại login
-
-      console.log("Logout successful");
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
 
   return (
     <div style={styles.container}>
@@ -150,9 +127,6 @@ function SheepIntro({ onLogout }) {
         </AnimatePresence>
         <SoundToggleButton />
       </div>
-      {/* <button style={styles.button} onClick={logout}>
-        Logout
-      </button> */}
 
       <button onClick={() => navigate("/")} style={styles.homeButton}>
               <FaHome size={24} />
