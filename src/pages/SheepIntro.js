@@ -28,11 +28,14 @@ function SheepIntro({ onLogout }) {
   };
 
   const [latestStats, setLatestStats] = useState(null);
+  let gameType = "SheepCounting";
 
   useEffect(() => {
     const fetchLatestStats = async () => {
       try {
-        const res = await api.get("/GameSession/latest-session");
+        const res = await api.get("/GameSession/latest-session", {
+          params: { gameType },
+        });
         if (!res.data) {
           console.warn("No latest session found");
           setLatestStats(null);
