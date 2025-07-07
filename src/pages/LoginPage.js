@@ -43,7 +43,7 @@ function LoginPage({ onLogin }) {
       // Bạn có thể lưu userId nếu muốn:
       //localStorage.setItem("userId", res.data.userId);
 
-      speak("Sheep Counting Game", 1, 1.5);
+      //speak("Sheep Counting Game", 1, 1.5);
       onLogin?.();
       //navigate("/sheep-intro");
     } catch (err) {

@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 
-function Sheep({ index, pos, clicked, onClick }) {
+function Sheep({ index, pos, clicked, onClick, srcImg }) {
   return (
     <motion.img
-      src="/images/sheep.png"
+      src={srcImg || "/images/sheep.png"}
       alt="Sheep"
       initial={false}
       animate={{

@@ -1,7 +1,7 @@
 // src/pages/SheepIntro.jsx
 import { useNavigate } from "react-router-dom";
 import SoundToggleButton from "../components/SoundToggleButton";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, color } from "framer-motion";
 import PlayButton from "../components/PlayButton";
 import { useEffect, useState } from "react";
 import api from "../services/api";
@@ -9,7 +9,7 @@ import GameStats from "../components/GameStats";
 import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
-function SheepIntro({ onLogout }) {
+function SheepColorIntro({ onLogout }) {
   const navigate = useNavigate();
 
   const speak = (text, rate = 1, pitch = 1) => {
@@ -29,7 +29,7 @@ function SheepIntro({ onLogout }) {
   };
 
   const [latestStats, setLatestStats] = useState(null);
-  let gameType = "SheepCounting";
+  let gameType = "SheepColorCounting";
 
   useEffect(() => {
     const fetchLatestStats = async () => {
@@ -136,7 +136,10 @@ function SheepIntro({ onLogout }) {
       <div style={styles.field}>
         <GameSummary summary={summaryStats} />
 
-        <h1 style={styles.title}>Welcome to Sheep Counting Game!</h1>
+        <h1 style={styles.title}>
+          Welcome to Sheep <span style={styles.Color}>Color</span> Counting
+          Game!
+        </h1>
         <AnimatePresence>
           <motion.div
             key="play-button"
@@ -145,7 +148,7 @@ function SheepIntro({ onLogout }) {
             exit={{ scale: 0.5, opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <PlayButton onClick={() => navigate("/sheep")} />
+            <PlayButton onClick={() => navigate("/sheep-color")} />
           </motion.div>
         </AnimatePresence>
         <SoundToggleButton />
@@ -155,8 +158,8 @@ function SheepIntro({ onLogout }) {
       </button> */}
 
       <button onClick={() => navigate("/")} style={styles.homeButton}>
-              <FaHome size={24} />
-            </button>
+        <FaHome size={24} />
+      </button>
 
       <GameStats
         elapsedSeconds={latestStats?.seconds ?? 0}
@@ -170,7 +173,7 @@ function SheepIntro({ onLogout }) {
   );
 }
 
-export default SheepIntro;
+export default SheepColorIntro;
 
 const styles = {
   container: {
@@ -200,6 +203,17 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
     zIndex: 1000,
     transition: "transform 0.2s",
+  },
+
+  Color: {
+    fontSize: "3.5rem",
+    //background: "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
+    background:
+      "linear-gradient(90deg, #FF4D4D, #FF9900, #FFFF33, #33FF33, #33CCFF, #9966FF, #FF66CC)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    textAlign: "center",
+    marginBottom: "1rem",
   },
   sheepLeft: {
     position: "absolute",
