@@ -1,15 +1,15 @@
 // src/pages/LoginPage.jsx
 import { useState } from "react";
-import api from "../services/api"; // Giả sử đã setup axios ở đây
+import api from "../services/api"; 
 import { useNavigate } from "react-router-dom";
 
 function LoginPage({ onLogin }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState(""); // nếu có password
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [username, setUsername] = useState(""); // Tên đăng nhập
+  const [password, setPassword] = useState(""); // Mật khẩu
+  const [error, setError] = useState(""); // Lỗi đăng nhập
+  const navigate = useNavigate(); // Dùng để điều hướng sau khi đăng nhập thành công
 
-  const speak = (text, rate = 1, pitch = 1) => {
+  const speak = (text, rate = 1, pitch = 1) => { // Hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -25,12 +25,12 @@ function LoginPage({ onLogin }) {
     window.speechSynthesis.speak(utter);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleSubmit = async (e) => { // Hàm xử lý khi người dùng gửi form đăng nhập
+    e.preventDefault(); // Ngăn chặn hành vi mặc định của form
+    setError(""); // Đặt lại lỗi trước khi gửi yêu cầu
     console.log("Submitting:", { username, password });
 
-    try {
+    try { // Gửi yêu cầu đăng nhập đến API
       const res = await api.post("/Auth/login", {
         username,
         password,
@@ -38,23 +38,21 @@ function LoginPage({ onLogin }) {
 
       console.log("Login response:", res.data);
 
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      // Bạn có thể lưu userId nếu muốn:
-      //localStorage.setItem("userId", res.data.userId);
+      localStorage.setItem("accessToken", res.data.accessToken); // Lưu accessToken vào localStorage
+      localStorage.setItem("refreshToken", res.data.refreshToken); // Lưu refreshToken vào localStorage
 
       //speak("Sheep Counting Game", 1, 1.5);
-      onLogin?.();
-      //navigate("/sheep-intro");
+      onLogin?.(); // Gọi hàm onLogin nếu có, để thông báo đăng nhập thành công
     } catch (err) {
       setError("Login failed. Please try again.");
       console.error("Login error:", err.message);
     }
   };
 
-  return (
+  return ( // Giao diện đăng nhập
     <div style={styles.container}>
       <h2 style={styles.heading}>Welcome to Sheep Counting Game 🐑</h2>
+      {/* form đăng nhập */}
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="text"
@@ -72,6 +70,7 @@ function LoginPage({ onLogin }) {
           required
           style={styles.input}
         />
+        {/* nút đăng nhập */}
         <button type="submit" style={styles.button}>
           Login
         </button>

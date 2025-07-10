@@ -1,4 +1,4 @@
-// src/components/ConfirmModal.jsx
+// component hộp thoại xác nhận ConfirmModal.jsx
 import React from "react";
 
 function ConfirmModal({ visible, message, onConfirm, onCancel }) {

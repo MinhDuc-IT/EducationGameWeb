@@ -10,9 +10,9 @@ import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
 function SheepMemoryIntro() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // dùng để điều hướng đến trang SheepMemoryMatch
 
-  const speak = (text, rate = 1, pitch = 1) => {
+  const speak = (text, rate = 1, pitch = 1) => { // hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -28,10 +28,10 @@ function SheepMemoryIntro() {
     window.speechSynthesis.speak(utter);
   };
 
-  const [latestStats, setLatestStats] = useState(null);
-  let gameType = "SheepMemoryMatch";
+  const [latestStats, setLatestStats] = useState(null); // trạng thái để lưu trữ thông tin phiên chơi game mới nhất
+  let gameType = "SheepMemoryMatch"; // loại trò chơi hiện tại
 
-  useEffect(() => {
+  useEffect(() => { // lấy thông tin phiên chơi game mới nhất từ API
     const fetchLatestStats = async () => {
       try {
         const res = await api.get("/GameSession/latest-session", {
@@ -51,9 +51,9 @@ function SheepMemoryIntro() {
     fetchLatestStats();
   }, []);
 
-  const [summaryStats, setSummaryStats] = useState(null);
+  const [summaryStats, setSummaryStats] = useState(null); // trạng thái để lưu trữ thông tin tổng hợp của trò chơi
 
-  useEffect(() => {
+  useEffect(() => { // lấy thông tin tổng hợp từ API
     const fetchSummary = async () => {
       try {
         const res = await api.get("/GameSession/summary", {
@@ -68,8 +68,9 @@ function SheepMemoryIntro() {
     fetchSummary();
   }, []);
 
-  return (
+  return ( // trả về giao diện của trang SheepMemoryIntro
     <div style={styles.container}>
+      {/* Hình ảnh con cừu bên trái */}
       <motion.img
         src="/images/sheep-left.png"
         alt="Sheep Left"
@@ -89,7 +90,7 @@ function SheepMemoryIntro() {
         transition={{ duration: 2.0 }}
         style={styles.question}
       >
-        Are you ready to count some sheep?
+        Are you ready to find some sheep?
       </motion.div>
 
       {/* Hướng dẫn (hiệu ứng từ dưới lên) */}
@@ -104,11 +105,14 @@ function SheepMemoryIntro() {
         Click the button below to start your adventure!
       </motion.div>
 
+      {/* khung chơi game ở giữa, hình ảnh đồng cỏ */}
       <div style={styles.field}>
+        {/* hiển thị component thông số tổng hợp của trò chơi */}
         <GameSummary summary={summaryStats} />
 
         <h1 style={styles.title}>Welcome to Sheep Memory Matching Game!</h1>
         <AnimatePresence>
+          {/* Hiển thị nút chơi game với hiệu ứng */}
           <motion.div
             key="play-button"
             initial={{ scale: 0.5, opacity: 0 }}
@@ -116,16 +120,18 @@ function SheepMemoryIntro() {
             exit={{ scale: 0.5, opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <PlayButton onClick={() => navigate("/sheep")} />
+            <PlayButton onClick={() => navigate("/sheep-memory")} />
           </motion.div>
         </AnimatePresence>
-        <SoundToggleButton />
+        <SoundToggleButton /> {/* nút bật/tắt âm thanh */}
       </div>
 
+      {/* Nút về trang chủ GameMap */}
       <button onClick={() => navigate("/")} style={styles.homeButton}>
-              <FaHome size={24} />
-            </button>
+        <FaHome size={24} />
+      </button>
 
+      {/* Hiển thị thông tin phiên chơi game mới nhất */}
       <GameStats
         elapsedSeconds={latestStats?.seconds ?? 0}
         round={latestStats?.maxRounds ?? 0}
@@ -138,7 +144,7 @@ function SheepMemoryIntro() {
   );
 }
 
-export default SheepIntro;
+export default SheepMemoryIntro;
 
 const styles = {
   container: {

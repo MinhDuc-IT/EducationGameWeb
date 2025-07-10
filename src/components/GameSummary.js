@@ -1,19 +1,20 @@
+// component hiển thị điểm tổng hợp của game
 import React from "react";
 
 function GameSummary({ summary }) {
-  const actualSummary = summary || {
+  const actualSummary = summary || { // nếu có dữ liệu phiên chơi thì gán, nếu chưa chơi lần nào thì mặc định là 0
     totalSeconds: 0,
     totalScore: 0,
     accuracy: 0,
   };
 
-  const formatSeconds = (seconds) => {
+  const formatSeconds = (seconds) => { // hàm format thời gian
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
   };
 
-  return (
+  return ( // giao diện chính
     <div style={styles.container}>
       <table style={styles.table}>
         <thead>
@@ -60,14 +61,11 @@ const styles = {
     padding: "12px",
     backgroundColor: "#dcedc8",
     fontWeight: "bold",
-    //borderRadius: "8px 8px 0 0",
     borderRadius: "40px",
-    //border: "2px solid #ccc",
   },
   cell: {
     padding: "10px",
     backgroundColor: "#ffffff",
-    //border: "1px solid #ccc",
   },
 };
 

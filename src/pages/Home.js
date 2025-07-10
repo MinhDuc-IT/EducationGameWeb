@@ -1,4 +1,4 @@
-// src/pages/Home.jsx
+// src/pages/Home.jsx dùng để test khi có game mới (GameMap mới là trang chủ chính)
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -15,6 +15,12 @@ const games = [
     description: "Count only the colored sheep!",
     image: "/images/sheep-red.png",
     path: "/sheep-color-intro",
+  },
+  {
+    title: "Sheep Memory Match",
+    description: "Match pairs of sheep images!",
+    image: "/images/sheep-purple.png",
+    path: "/sheep-memory-intro",
   },
 ];
 

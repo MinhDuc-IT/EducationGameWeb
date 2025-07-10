@@ -10,9 +10,9 @@ import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
 function SheepColorIntro() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // dùng để điều hướng đến trang SheepColorCounting
 
-  const speak = (text, rate = 1, pitch = 1) => {
+  const speak = (text, rate = 1, pitch = 1) => { // hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -28,10 +28,10 @@ function SheepColorIntro() {
     window.speechSynthesis.speak(utter);
   };
 
-  const [latestStats, setLatestStats] = useState(null);
-  let gameType = "SheepColorCounting";
+  const [latestStats, setLatestStats] = useState(null); // trạng thái để lưu trữ thông tin phiên chơi game mới nhất
+  let gameType = "SheepColorCounting"; // loại trò chơi hiện tại
 
-  useEffect(() => {
+  useEffect(() => { // lấy thông tin phiên chơi game mới nhất từ API
     const fetchLatestStats = async () => {
       try {
         const res = await api.get("/GameSession/latest-session", {
@@ -51,9 +51,9 @@ function SheepColorIntro() {
     fetchLatestStats();
   }, []);
 
-  const [summaryStats, setSummaryStats] = useState(null);
+  const [summaryStats, setSummaryStats] = useState(null); // trạng thái để lưu trữ thông tin tổng hợp của trò chơi
 
-  useEffect(() => {
+  useEffect(() => { // lấy thông tin tổng hợp từ API
     const fetchSummary = async () => {
       try {
         const res = await api.get("/GameSession/summary", {
@@ -68,14 +68,9 @@ function SheepColorIntro() {
     fetchSummary();
   }, []);
 
-  return (
+  return ( // giao diện chính của trang SheepColorIntro
     <div style={styles.container}>
-      {/* <img
-        src="/images/sheep-left.png"
-        alt="Sheep Left"
-        style={styles.sheepLeft}
-        /> */}
-
+      {/* Hình ảnh cừu bên trái (hiệu ứng từ trái vào) */}
       <motion.img
         src="/images/sheep-left.png"
         alt="Sheep Left"
@@ -110,6 +105,7 @@ function SheepColorIntro() {
         Click the button below to start your adventure!
       </motion.div>
 
+      {/* Khung chơi game ở giữa, hình ảnh đồng cỏ */}
       <div style={styles.field}>
         <GameSummary summary={summaryStats} />
 
@@ -117,6 +113,8 @@ function SheepColorIntro() {
           Welcome to Sheep <span style={styles.Color}>Color</span> Counting
           Game!
         </h1>
+
+        {/* nút play */}
         <AnimatePresence>
           <motion.div
             key="play-button"
@@ -128,13 +126,15 @@ function SheepColorIntro() {
             <PlayButton onClick={() => navigate("/sheep-color")} />
           </motion.div>
         </AnimatePresence>
-        <SoundToggleButton />
+        <SoundToggleButton /> {/* nút bật/tắt âm thanh */}
       </div>
 
+      {/* Hiển thị nút Home với biểu tượng */}
       <button onClick={() => navigate("/")} style={styles.homeButton}>
         <FaHome size={24} />
       </button>
 
+      {/* Hiển thị thông tin phiên chơi game mới nhất */}
       <GameStats
         elapsedSeconds={latestStats?.seconds ?? 0}
         round={latestStats?.maxRounds ?? 0}

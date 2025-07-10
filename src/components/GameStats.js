@@ -1,3 +1,4 @@
+// component hiển thị bảng điểm số bên phải
 import React, { useEffect, useState } from "react";
 
 function GameStats({
@@ -8,12 +9,13 @@ function GameStats({
   correctFirstTryCount,
   correctSecondTryCount,
   isStaticTime = false,
+  isMemoryMatch = false,
 }) {
-  const [elapsedTime, setElapsedTime] = useState("0s");
-  const [bonus, setBonus] = useState(null);
-  const [lastScore, setLastScore] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState("0s"); // lưu để tính format thời gian
+  const [bonus, setBonus] = useState(null); // lưu điểm tăng mỗi round
+  const [lastScore, setLastScore] = useState(0); // lưu điểm round trước
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds) => { // hàm định dạng thời gian
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
@@ -21,10 +23,10 @@ function GameStats({
   };
 
   useEffect(() => {
-    if (isStaticTime) {
+    if (isStaticTime) { // nếu được gọi từ các trang intro tức là chỉ tính thời gian của phiên gần nhất
       setElapsedTime(formatTime(elapsedSeconds));
-    } else {
-      const interval = setInterval(() => {
+    } else { // nếu được gọi từ các trang chơi game thì thời gian được tính cập nhật từng giây
+      const interval = setInterval(() => { // sử dụng interval để cập nhật từng giây
         const now = new Date();
         const start = new Date(startTime);
         const seconds = Math.floor((now - start) / 1000);
@@ -34,17 +36,20 @@ function GameStats({
     }
   }, [startTime, elapsedSeconds, isStaticTime]);
 
-  const score = correctFirstTryCount * 2 + correctSecondTryCount * 1;
+  // tính điểm
+  const score = isMemoryMatch
+  ? correctFirstTryCount * 2 + correctSecondTryCount * 1
+  : correctFirstTryCount * 4 + correctSecondTryCount * 2;
 
   // Effect phát hiện điểm tăng
   useEffect(() => {
-    if (!isStaticTime) {
-      const diff = score - lastScore;
+    if (!isStaticTime) { // tính đối với các trang chơi game khi điểm cập nhật từng round
+      const diff = score - lastScore; // lượng điểm tăng
       if (diff > 0) {
-        setBonus(`+${diff}`);
+        setBonus(`+${diff}`); // gán bonus là điểm tăng
         console.log("Score diff:", diff);
         setTimeout(() => setBonus(null), 1200);
-        setLastScore(score);
+        setLastScore(score); // cập nhật điểm sau khi cộng bonus
       }
     }
   }, [score]);

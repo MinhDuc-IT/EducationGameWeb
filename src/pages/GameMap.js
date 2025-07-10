@@ -1,280 +1,3 @@
-// // src/pages/GameMap.js
-// import React, { useState, useEffect } from "react";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { FaHome } from "react-icons/fa";
-// import { useNavigate } from "react-router-dom";
-// import api from "../services/api";
-// import SoundToggleButton from "../components/SoundToggleButton";
-
-// const levelPoints = [
-//   { id: 1, name: "SheepCounting", x: 10, y: 60, unlocked: true, totalScore: 0 },
-//   {
-//     id: 2,
-//     name: "SheepColorCounting",
-//     x: 50,
-//     y: 70,
-//     unlocked: true,
-//     totalScore: 0,
-//   },
-//   { id: 3, name: "NewGame", x: 80, y: 65, unlocked: true, totalScore: 0 },
-// ];
-
-// const GameMap = ({ onLogout }) => {
-//   const [currentLevelId, setCurrentLevelId] = useState(1);
-//   const [characterPos, setCharacterPos] = useState({
-//     x: levelPoints[0].x,
-//     y: levelPoints[0].y,
-//   });
-//   const [pathQueue, setPathQueue] = useState([]);
-//   const [isMoving, setIsMoving] = useState(false);
-//   const [showInstruction, setShowInstruction] = useState(false);
-//   const [selectedGame, setSelectedGame] = useState(null);
-//   const [levelPointsActual, setLevelPointsActual] = useState(levelPoints);
-
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const fetchLevelPoints = async () => {
-//       try {
-//         const res = await api.get("/GameSession/unlocked-status");
-//         if (!res.data) {
-//           console.warn("No latest session found");
-//           return;
-//         }
-//         setLevelPointsActual(res.data);
-//         console.log("Level points loaded:", res.data);
-//         console.log("levelPointsActual:", levelPointsActual);
-//       } catch (error) {
-//         console.error("Failed to load latest session:", error);
-//       }
-//     };
-//     const updatedPoints = levelPoints.map((point) => {
-//       const match = levelPointsActual.find(
-//         (item) => item.gameType === point.name
-//       );
-//       return {
-//         ...point,
-//         unlocked: match?.unlocked ?? false,
-//         totalScore: match?.totalScore ?? 0,
-//       };
-//     });
-
-//     fetchLevelPoints();
-//     setLevelPointsActual(updatedPoints);
-//   }, []);
-
-//   const logout = async () => {
-//     try {
-//       console.log("Logging out...");
-//       await api.post("/Auth/logout");
-//       localStorage.removeItem("accessToken");
-//       localStorage.removeItem("refreshToken");
-//       onLogout?.();
-//       navigate("/");
-//       console.log("Logout successful");
-//     } catch (err) {
-//       console.error("Logout failed", err);
-//     }
-//   };
-
-//   const moveCharacter = async (path) => {
-//     setIsMoving(true);
-//     for (let i = 0; i < path.length; i++) {
-//       const nextPoint = levelPoints.find((p) => p.id === path[i]);
-//       await new Promise((res) => {
-//         setCharacterPos({ x: nextPoint.x, y: nextPoint.y });
-//         setTimeout(res, 2000);
-//       });
-//       setCurrentLevelId(nextPoint.id);
-//     }
-//     setIsMoving(false);
-//     const finalPoint = levelPoints.find((p) => p.id === path[path.length - 1]);
-//     setSelectedGame(finalPoint);
-//     setShowInstruction(true);
-//   };
-
-//   const handlePointClick = (point) => {
-//     if (!point.unlocked || point.id === currentLevelId || isMoving) return;
-//     const step = point.id > currentLevelId ? 1 : -1;
-//     const path = [];
-//     for (
-//       let i = currentLevelId + step;
-//       step > 0 ? i <= point.id : i >= point.id;
-//       i += step
-//     ) {
-//       path.push(i);
-//     }
-//     setPathQueue(path);
-//   };
-
-//   useEffect(() => {
-//     const startPoint = levelPoints.find((p) => p.id === currentLevelId);
-//     setSelectedGame(startPoint);
-
-//     setTimeout(() => {
-//       setShowInstruction(true);
-//     }, 2000);
-//   }, []);
-
-//   useEffect(() => {
-//     if (pathQueue.length > 0 && !isMoving) {
-//       moveCharacter(pathQueue);
-//       setPathQueue([]);
-//     }
-//   }, [pathQueue, isMoving]);
-
-//   const handlePlay = () => {
-//     if (selectedGame?.name === "SheepCounting") {
-//       navigate("/sheep-intro");
-//     } else if (selectedGame?.name === "SheepColorCounting") {
-//       navigate("/sheep-color-intro");
-//     } else if (selectedGame?.name === "New Game") {
-//       navigate("/new-game");
-//     }
-//   };
-
-//   return (
-//     <div style={styles.container}>
-//       <SoundToggleButton />
-
-//       <button onClick={logout} style={styles.logoutButton}>
-//         <span style={{ color: "green" }}>Logout</span>
-//       </button>
-
-//       <motion.img
-//         src="/images/sheep-left.png"
-//         alt="Character"
-//         style={styles.character}
-//         animate={{
-//           left: `${characterPos.x}%`,
-//           top: `${characterPos.y}%`,
-//         }}
-//         transition={{ duration: 2, ease: "easeInOut" }}
-//       />
-
-//       {levelPoints.map((point) => (
-//         <div
-//           key={point.id}
-//           onClick={() => handlePointClick(point)}
-//           style={styles.levelPoint(point)}
-//         >
-//           {point.id}
-//         </div>
-//       ))}
-
-//       <AnimatePresence mode="wait">
-//         {showInstruction && selectedGame && (
-//           <motion.div
-//             key={selectedGame.id}
-//             initial={{ opacity: 0 }}
-//             animate={{ opacity: 1 }}
-//             exit={{ opacity: 0 }}
-//             transition={{ duration: 0.5 }}
-//             style={styles.instructionModal(selectedGame)}
-//           >
-//             <h2 style={{ marginBottom: "12px" }}>Instructions</h2>
-//             <p style={{ marginBottom: "20px" }}>
-//               Get ready to play <strong>{selectedGame.name}</strong>!
-//             </p>
-//             <button onClick={handlePlay} style={styles.playButton}>
-//               Play
-//             </button>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-//     </div>
-//   );
-// };
-
-// export default GameMap;
-
-// const styles = {
-//   container: {
-//     position: "relative",
-//     width: "100vw",
-//     height: "100vh",
-//     backgroundImage: 'url("/images/grass.png")',
-//     backgroundSize: "cover",
-//     overflow: "hidden",
-//   },
-//   homeButton: {
-//     position: "absolute",
-//     top: 20,
-//     left: 20,
-//     zIndex: 20,
-//     fontSize: "2rem",
-//     background: "white",
-//     borderRadius: "50%",
-//     padding: "10px",
-//     border: "2px solid green",
-//     boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-//   },
-//   logoutButton: {
-//     position: "absolute",
-//     top: "10%",
-//     left: "1%",
-//     transform: "translate(50%, -50%)",
-//     fontSize: "1.2rem",
-//     backgroundColor: "white",
-//     color: "#fff",
-//     cursor: "pointer",
-//     transition: "background-color 0.3s",
-
-//     borderRadius: "50%",
-//     padding: "10px",
-//     border: "2px solid green",
-//     boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-//   },
-//   character: {
-//     position: "absolute",
-//     width: "8vw",
-//     height: "auto",
-//     zIndex: 10,
-//   },
-//   levelPoint: (point) => ({
-//     position: "absolute",
-//     left: `${point.x}%`,
-//     top: `${point.y}%`,
-//     transform: "translate(-50%, -50%)",
-//     width: "60px",
-//     height: "60px",
-//     borderRadius: "50%",
-//     backgroundColor: point.unlocked ? "#4caf50" : "#bbb",
-//     border: "3px solid white",
-//     display: "flex",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     color: "white",
-//     fontWeight: "bold",
-//     fontSize: "0.9rem",
-//     cursor: point.unlocked ? "pointer" : "not-allowed",
-//     zIndex: 5,
-//     boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-//   }),
-//   instructionModal: (selectedGame) => ({
-//     position: "absolute",
-//     left: `${selectedGame.x}%`,
-//     top: `${selectedGame.y - 10}%`,
-//     transform: "translate(-50%, -100%)",
-//     backgroundColor: "white",
-//     borderRadius: "12px",
-//     padding: "20px",
-//     boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-//     zIndex: 30,
-//     textAlign: "center",
-//     width: "200px",
-//   }),
-//   playButton: {
-//     padding: "10px 20px",
-//     backgroundColor: "#4caf50",
-//     color: "white",
-//     border: "none",
-//     borderRadius: "8px",
-//     cursor: "pointer",
-//     fontWeight: "bold",
-//   },
-// };
-
 // src/pages/GameMap.js
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -283,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import SoundToggleButton from "../components/SoundToggleButton";
 
-const initialLevelPoints = [
+const initialLevelPoints = [ // Danh sách các điểm trên bản đồ
   { id: 1, name: "SheepCounting", x: 10, y: 60, unlocked: true, totalScore: 0 },
   {
     id: 2,
@@ -293,45 +16,45 @@ const initialLevelPoints = [
     unlocked: true,
     totalScore: 0,
   },
-  { id: 3, name: "NewGame", x: 80, y: 65, unlocked: true, totalScore: 0 },
+  { id: 3, name: "SheepMemoryMatch", x: 80, y: 65, unlocked: true, totalScore: 0 },
 ];
 
 const GameMap = ({ onLogout }) => {
-  const [levelPoints, setLevelPoints] = useState(initialLevelPoints);
-  const [currentLevelId, setCurrentLevelId] = useState(1);
-  const [characterPos, setCharacterPos] = useState({
+  const [levelPoints, setLevelPoints] = useState(initialLevelPoints); // Danh sách các điểm trên bản đồ
+  const [currentLevelId, setCurrentLevelId] = useState(1); // ID của cấp độ hiện tại
+  const [characterPos, setCharacterPos] = useState({ // Vị trí của nhân vật
     x: initialLevelPoints[0].x,
     y: initialLevelPoints[0].y,
   });
-  const [pathQueue, setPathQueue] = useState([]);
-  const [isMoving, setIsMoving] = useState(false);
-  const [showInstruction, setShowInstruction] = useState(false);
-  const [selectedGame, setSelectedGame] = useState(initialLevelPoints[0]);
-  const [hoveredLockedPoint, setHoveredLockedPoint] = useState(null);
+  const [pathQueue, setPathQueue] = useState([]); // Hàng đợi các điểm cần di chuyển
+  const [isMoving, setIsMoving] = useState(false); // Trạng thái di chuyển của nhân vật
+  const [showInstruction, setShowInstruction] = useState(false); // Hiển thị hướng dẫn
+  const [selectedGame, setSelectedGame] = useState(initialLevelPoints[0]); // Trò chơi đã chọn
+  const [hoveredLockedPoint, setHoveredLockedPoint] = useState(null); // Điểm bị khóa đang được hover
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Dùng để điều hướng đến các trang khác
 
-  useEffect(() => {
-    const fetchLevelPoints = async () => {
+  useEffect(() => { // Lấy trạng thái mở khóa các cấp độ từ API khi component được mount
+    const fetchLevelPoints = async () => { // Hàm lấy trạng thái mở khóa các cấp độ
       try {
         const res = await api.get("/GameSession/unlocked-status");
         const actualData = res.data;
 
-        const updated = initialLevelPoints.map((point) => {
-          const match = actualData.find((item) => item.gameType === point.name);
-          return {
+        const updated = initialLevelPoints.map((point) => { // Cập nhật trạng thái mở khóa và điểm số cho từng cấp độ
+          const match = actualData.find((item) => item.gameType === point.name); // Tìm kiếm trong dữ liệu thực tế
+          return { // Trả về đối tượng điểm đã cập nhật
             ...point,
-            unlocked: match?.unlocked ?? false,
-            totalScore: match?.totalScore ?? 0,
+            unlocked: match?.unlocked ?? false, // Nếu không tìm thấy, mặc định là false
+            totalScore: match?.totalScore ?? 0, // Nếu không tìm thấy, mặc định là 0
           };
         });
 
-        setLevelPoints(updated);
-        setCharacterPos({ x: updated[0].x, y: updated[0].y });
-        setSelectedGame(updated[0]);
+        setLevelPoints(updated); // Cập nhật danh sách điểm trên bản đồ
+        setCharacterPos({ x: updated[0].x, y: updated[0].y }); // Đặt vị trí nhân vật tại điểm đầu tiên
+        setSelectedGame(updated[0]); // Đặt trò chơi đã chọn là điểm đầu tiên
 
         setTimeout(() => {
-          setShowInstruction(true);
+          setShowInstruction(true); // Hiển thị hướng dẫn sau 2 giây
         }, 2000);
       } catch (error) {
         console.error("Failed to load level points:", error);
@@ -341,21 +64,21 @@ const GameMap = ({ onLogout }) => {
     fetchLevelPoints();
   }, []);
 
-  const logout = async () => {
+  const logout = async () => { // Hàm đăng xuất người dùng
     try {
       console.log("Logging out...");
       await api.post("/Auth/logout");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      onLogout?.();
-      navigate("/");
+      localStorage.removeItem("accessToken"); // Xóa accessToken khỏi localStorage
+      localStorage.removeItem("refreshToken"); // Xóa refreshToken khỏi localStorage
+      onLogout?.(); // Gọi hàm onLogout nếu có
+      navigate("/"); // Điều hướng về trang đăng nhập
       console.log("Logout successful");
     } catch (err) {
       console.error("Logout failed", err);
     }
   };
 
-  const playSound = (src, volume = 1, maxDuration = null) => {
+  const playSound = (src, volume = 1, maxDuration = null) => { // Hàm phát âm thanh
     const audio = new Audio(src);
     audio.volume = volume;
     audio
@@ -372,63 +95,65 @@ const GameMap = ({ onLogout }) => {
       .catch((err) => console.error("Error playing audio:", err));
   };
 
-  const moveCharacter = async (path) => {
-    setIsMoving(true);
+  const moveCharacter = async (path) => { // Hàm di chuyển nhân vật theo đường dẫn đã cho
+    setIsMoving(true); // Đặt trạng thái di chuyển là true
     playSound("/sounds/sheep-baa.mp3", 1, 2000);
-    for (let i = 0; i < path.length; i++) {
-      const nextPoint = levelPoints.find((p) => p.id === path[i]);
-      await new Promise((res) => {
-        setCharacterPos({ x: nextPoint.x, y: nextPoint.y });
-        setTimeout(res, 2000);
+    for (let i = 0; i < path.length; i++) { // Lặp qua từng điểm trong đường dẫn
+      const nextPoint = levelPoints.find((p) => p.id === path[i]); // Tìm điểm tiếp theo trong danh sách điểm
+      await new Promise((res) => { // Chờ 2 giây trước khi di chuyển đến điểm tiếp theo
+        setCharacterPos({ x: nextPoint.x, y: nextPoint.y }); // Cập nhật vị trí nhân vật
+        setTimeout(res, 2000); 
       });
-      setCurrentLevelId(nextPoint.id);
+      setCurrentLevelId(nextPoint.id); // Cập nhật ID cấp độ hiện tại
     }
-    setIsMoving(false);
+    setIsMoving(false); // Đặt trạng thái di chuyển là false
     playSound("/sounds/sheep-baa.mp3", 1, 2000);
-    const finalPoint = levelPoints.find((p) => p.id === path[path.length - 1]);
-    setSelectedGame(finalPoint);
-    setShowInstruction(true);
+    const finalPoint = levelPoints.find((p) => p.id === path[path.length - 1]); // Lấy điểm cuối cùng trong đường dẫn
+    setSelectedGame(finalPoint); // Cập nhật trò chơi đã chọn
+    setShowInstruction(true); // Hiển thị hướng dẫn cho trò chơi đã chọn
   };
 
-  const handlePointClick = (point) => {
-    if (!point.unlocked || point.id === currentLevelId || isMoving) return;
-    const step = point.id > currentLevelId ? 1 : -1;
-    const path = [];
-    for (
-      let i = currentLevelId + step;
-      step > 0 ? i <= point.id : i >= point.id;
-      i += step
+  const handlePointClick = (point) => { // Hàm xử lý khi người dùng click vào một điểm trên bản đồ
+    if (!point.unlocked || point.id === currentLevelId || isMoving) return; // Nếu điểm không mở khóa, đã ở cấp độ đó hoặc đang di chuyển thì không làm gì cả
+    const step = point.id > currentLevelId ? 1 : -1; // Xác định bước di chuyển dựa trên ID của điểm
+    const path = []; // Tạo mảng để lưu đường dẫn di chuyển
+    for ( // Tạo đường dẫn từ cấp độ hiện tại đến điểm đã click
+      let i = currentLevelId + step; // Bắt đầu từ cấp độ hiện tại cộng với bước
+      step > 0 ? i <= point.id : i >= point.id; // Tiếp tục cho đến khi đạt đến điểm đã click
+      i += step // Tăng hoặc giảm ID tùy theo bước
     ) {
-      path.push(i);
+      path.push(i); // Thêm ID vào đường dẫn
     }
-    setPathQueue(path);
+    setPathQueue(path); // Cập nhật hàng đợi đường dẫn để di chuyển
   };
 
-  useEffect(() => {
-    if (pathQueue.length > 0 && !isMoving) {
-      moveCharacter(pathQueue);
-      setPathQueue([]);
+  useEffect(() => { // Khi component được mount, đặt trò chơi đã chọn là điểm đầu tiên
+    if (pathQueue.length > 0 && !isMoving) { // Nếu có đường dẫn trong hàng đợi và không đang di chuyển
+      moveCharacter(pathQueue); // Di chuyển nhân vật theo đường dẫn
+      setPathQueue([]); // Đặt lại hàng đợi đường dẫn
     }
-  }, [pathQueue, isMoving]);
+  }, [pathQueue, isMoving]); // Theo dõi sự thay đổi của pathQueue và isMoving
 
-  const handlePlay = () => {
-    if (selectedGame?.name === "SheepCounting") {
+  const handlePlay = () => { // Hàm xử lý khi người dùng click nút "Play" trong hướng dẫn
+    if (selectedGame?.name === "SheepCounting") { // Nếu trò chơi đã chọn là SheepCounting
       navigate("/sheep-intro");
-    } else if (selectedGame?.name === "SheepColorCounting") {
+    } else if (selectedGame?.name === "SheepColorCounting") { // Nếu trò chơi đã chọn là SheepColorCounting
       navigate("/sheep-color-intro");
-    } else if (selectedGame?.name === "NewGame") {
-      navigate("/new-game");
+    } else if (selectedGame?.name === "SheepMemoryMatch") { // Nếu trò chơi đã chọn là SheepMemoryMatch 
+      navigate("/sheep-memory-intro");
     }
   };
 
   return (
     <div style={styles.container}>
-      <SoundToggleButton />
+      <SoundToggleButton /> {/* Nút bật/tắt âm thanh */}
 
+      {/* nút đăng xuất */}
       <button onClick={logout} style={styles.logoutButton}>
         <span style={{ color: "green" }}>Logout</span>
       </button>
 
+      {/* hình ảnh chú cừu di chuyển */}
       <motion.img
         src="/images/sheep-left.png"
         alt="Character"
@@ -440,15 +165,16 @@ const GameMap = ({ onLogout }) => {
         transition={{ duration: 2, ease: "easeInOut" }}
       />
 
+      {/* Hiển thị các điểm trên bản đồ */}
       {levelPoints.map((point) => (
         <div
           key={point.id}
           onClick={() => handlePointClick(point)}
-          onMouseEnter={() => {
-            if (!point.unlocked) setHoveredLockedPoint(point);
+          onMouseEnter={() => { // Hiển thị thông tin điểm khi hover
+            if (!point.unlocked) setHoveredLockedPoint(point); // Hiển thị thông tin điểm bị khóa khi hover
           }}
           onMouseLeave={() => {
-            if (!point.unlocked) setHoveredLockedPoint(null);
+            if (!point.unlocked) setHoveredLockedPoint(null); // Ẩn thông tin điểm bị khóa khi không hover
           }}
           style={styles.levelPoint(point)}
         >
@@ -457,6 +183,7 @@ const GameMap = ({ onLogout }) => {
       ))}
 
       <AnimatePresence mode="wait">
+        {/* Hiển thị hướng dẫn khi có trò chơi đã chọn */}
         {showInstruction && selectedGame && (
           <motion.div
             key={selectedGame.id}
@@ -473,6 +200,7 @@ const GameMap = ({ onLogout }) => {
             <p style={{ marginBottom: "20px" }}>
               Total Score: <strong>{selectedGame.totalScore}</strong>
             </p>
+            {/* nút play */}
             <button onClick={handlePlay} style={styles.playButton}>
               Play
             </button>
@@ -480,6 +208,7 @@ const GameMap = ({ onLogout }) => {
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
+        {/* hướng dẫn cho điểm bị khóa */}
         {hoveredLockedPoint && (
           <motion.div
             key={"locked-" + hoveredLockedPoint.id}
@@ -494,7 +223,7 @@ const GameMap = ({ onLogout }) => {
               To unlock <strong>{hoveredLockedPoint.name}</strong>:
             </p>
             <p style={{ fontSize: "0.85rem" }}>
-              Score ≥ <strong>50</strong> in previous game
+              Score ≥ <strong>100</strong> in previous game
             </p>
           </motion.div>
         )}

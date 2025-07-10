@@ -10,9 +10,10 @@ import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
 function SheepIntro() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // dùng để điều hướng đến trang SheepCounting
 
   const speak = (text, rate = 1, pitch = 1) => {
+    // hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -28,10 +29,11 @@ function SheepIntro() {
     window.speechSynthesis.speak(utter);
   };
 
-  const [latestStats, setLatestStats] = useState(null);
-  let gameType = "SheepCounting";
+  const [latestStats, setLatestStats] = useState(null); // trạng thái để lưu trữ thông tin phiên chơi game mới nhất
+  let gameType = "SheepCounting"; // loại trò chơi hiện tại
 
   useEffect(() => {
+    // lấy thông tin phiên chơi game mới nhất từ API
     const fetchLatestStats = async () => {
       try {
         const res = await api.get("/GameSession/latest-session", {
@@ -51,9 +53,10 @@ function SheepIntro() {
     fetchLatestStats();
   }, []);
 
-  const [summaryStats, setSummaryStats] = useState(null);
+  const [summaryStats, setSummaryStats] = useState(null); // trạng thái để lưu trữ thông tin tổng hợp của trò chơi
 
   useEffect(() => {
+    // lấy thông tin tổng hợp từ API
     const fetchSummary = async () => {
       try {
         const res = await api.get("/GameSession/summary", {
@@ -69,13 +72,9 @@ function SheepIntro() {
   }, []);
 
   return (
+    // trả về giao diện của trang SheepIntro
     <div style={styles.container}>
-      {/* <img
-        src="/images/sheep-left.png"
-        alt="Sheep Left"
-        style={styles.sheepLeft}
-        /> */}
-
+      {/* Hình ảnh con cừu bên trái */}
       <motion.img
         src="/images/sheep-left.png"
         alt="Sheep Left"
@@ -110,11 +109,13 @@ function SheepIntro() {
         Click the button below to start your adventure!
       </motion.div>
 
+      {/* khung chơi game ở giữa, hình ảnh đồng cỏ */}
       <div style={styles.field}>
+        {/* hiển thị component thông số tổng hợp của trò chơi */}
         <GameSummary summary={summaryStats} />
-
         <h1 style={styles.title}>Welcome to Sheep Counting Game!</h1>
         <AnimatePresence>
+          {/* Hiển thị nút chơi game với hiệu ứng */}
           <motion.div
             key="play-button"
             initial={{ scale: 0.5, opacity: 0 }}
@@ -125,13 +126,15 @@ function SheepIntro() {
             <PlayButton onClick={() => navigate("/sheep")} />
           </motion.div>
         </AnimatePresence>
-        <SoundToggleButton />
+        <SoundToggleButton /> {/* nút bật/tắt âm thanh */}
       </div>
 
+      {/* nút trở về trang chủ GameMap */}
       <button onClick={() => navigate("/")} style={styles.homeButton}>
-              <FaHome size={24} />
-            </button>
+        <FaHome size={24} />
+      </button>
 
+      {/* Hiển thị thông tin phiên chơi game mới nhất */}
       <GameStats
         elapsedSeconds={latestStats?.seconds ?? 0}
         round={latestStats?.maxRounds ?? 0}

@@ -1,3 +1,4 @@
+// component hiển thị các đáp án lựa chọn
 import { motion } from "framer-motion";
 
 function Option({ num, isCorrect, isWrong, hide, message, onClick }) {

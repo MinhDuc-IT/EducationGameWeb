@@ -1,3 +1,4 @@
+// component chú cừu
 import { motion } from "framer-motion";
 
 function Sheep({ index, pos, clicked, onClick, srcImg }) {

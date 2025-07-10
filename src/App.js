@@ -15,6 +15,8 @@ import SheepColorIntro from "./pages/SheepColorIntro";
 import SheepColorCountingGame from "./pages/SheepColorCountingGame";
 import Home from "./pages/Home";
 import GameMap from "./pages/GameMap";
+import SheepMemoryIntro from "./pages/SheepMemoryIntro";
+import SheepMemoryMatchGame from "./pages/SheepMemoryMatchGame";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -84,6 +86,22 @@ function App() {
             element={
               <PrivateRoute>
                 <GameMap onLogout={() => setIsLoggedIn(false)} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sheep-memory-intro"
+            element={
+              <PrivateRoute>
+                <SheepMemoryIntro />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sheep-memory"
+            element={
+              <PrivateRoute>
+                <SheepMemoryMatchGame />
               </PrivateRoute>
             }
           />

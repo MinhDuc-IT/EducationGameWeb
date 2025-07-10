@@ -1,3 +1,4 @@
+// component nhân vật
 import { motion } from "framer-motion";
 
 function Character({ name, round, src, style }) {

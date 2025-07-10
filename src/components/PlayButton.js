@@ -1,14 +1,7 @@
 // src/components/PlayButton.jsx
-import { useNavigate } from 'react-router-dom';
 import { FaPlay } from 'react-icons/fa';
 
 function PlayButton({onClick}) {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    // Sau này sẽ điều hướng tới game page
-    alert('Coming soon!');
-  };
 
   return (
     <div style={{ textAlign: 'center' }}>
