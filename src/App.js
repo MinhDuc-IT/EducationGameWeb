@@ -17,6 +17,7 @@ import Home from "./pages/Home";
 import GameMap from "./pages/GameMap";
 import SheepMemoryIntro from "./pages/SheepMemoryIntro";
 import SheepMemoryMatchGame from "./pages/SheepMemoryMatchGame";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,6 +48,12 @@ function App() {
               <PrivateRoute>
                 <Home onLogout={() => setIsLoggedIn(false)} />
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+                <RegisterPage />
             }
           />
           <Route

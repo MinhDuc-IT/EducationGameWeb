@@ -1,16 +1,16 @@
-// src/pages/LoginPage.jsx
 import { useState } from "react";
-import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-function LoginPage({ onLogin }) {
-  const [username, setUsername] = useState(""); // Tên đăng nhập
+function RegisterPage() {
+  const [username, setUsername] = useState(""); // Tên đăng ký
   const [password, setPassword] = useState(""); // Mật khẩu
-  const [error, setError] = useState(""); // Lỗi đăng nhập
-  const navigate = useNavigate(); // Dùng để điều hướng sau khi đăng nhập thành công
+  const [confirmPassword, setConfirmPassword] = useState(""); // Xác nhận mật khẩu
+  const [error, setError] = useState(""); // Lỗi đăng ký
+  const [success, setSuccess] = useState(""); // Thông báo thành công
+  const navigate = useNavigate(); // Điều hướng
 
   const speak = (text, rate = 1, pitch = 1) => {
-    // Hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -26,38 +26,39 @@ function LoginPage({ onLogin }) {
     window.speechSynthesis.speak(utter);
   };
 
-  const handleSubmit = async (e) => {
-    // Hàm xử lý khi người dùng gửi form đăng nhập
-    e.preventDefault(); // Ngăn chặn hành vi mặc định của form
-    setError(""); // Đặt lại lỗi trước khi gửi yêu cầu
-    console.log("Submitting:", { username, password });
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     try {
-      // Gửi yêu cầu đăng nhập đến API
-      const res = await api.post("/Auth/login", {
+      const res = await api.post("/Auth/register", {
         username,
         password,
       });
 
-      console.log("Login response:", res.data);
+      console.log("Register response:", res.data);
+      setSuccess("Registration successful! Redirecting to login...");
+      //speak("Registration successful!");
 
-      localStorage.setItem("accessToken", res.data.accessToken); // Lưu accessToken vào localStorage
-      localStorage.setItem("refreshToken", res.data.refreshToken); // Lưu refreshToken vào localStorage
-
-      //speak("Sheep Counting Game", 1, 1.5);
-      onLogin?.(); // Gọi hàm onLogin nếu có, để thông báo đăng nhập thành công
+      setTimeout(() => {
+        navigate("/"); // Chuyển đến trang đăng nhập
+      }, 2000);
     } catch (err) {
-      setError("Login failed. Please try again.");
-      console.error("Login error:", err.message);
+      console.error("Registration error:", err);
+      setError("Registration failed. Please try a different username.");
     }
   };
 
   return (
-    // Giao diện đăng nhập
     <div style={styles.container}>
-      <h2 style={styles.heading}>Welcome to Sheep Counting Game 🐑</h2>
-      {/* form đăng nhập */}
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <h2 style={styles.heading}>Create a New Account 🐑</h2>
+      <form onSubmit={handleRegister} style={styles.form}>
         <input
           type="text"
           placeholder="Enter your username..."
@@ -74,22 +75,30 @@ function LoginPage({ onLogin }) {
           required
           style={styles.input}
         />
-        {/* nút đăng nhập */}
+        <input
+          type="password"
+          placeholder="Confirm your password..."
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          style={styles.input}
+        />
         <button type="submit" style={styles.button}>
-          Login
+          Register
         </button>
         {error && <p style={styles.errorText}>{error}</p>}
+        {success && <p style={styles.successText}>{success}</p>}
         <p style={{ fontSize: "14px" }}>
-          Don't have an account?{" "}
+          Have an account?{" "}
           <span
-            onClick={() => navigate("/register")}
+            onClick={() => navigate("/")}
             style={{
               color: "#1e88e5",
               cursor: "pointer",
               textDecoration: "underline",
             }}
           >
-            Register here
+            Login here
           </span>
         </p>
       </form>
@@ -97,7 +106,7 @@ function LoginPage({ onLogin }) {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;
 
 const styles = {
   container: {
