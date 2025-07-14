@@ -24,7 +24,7 @@ const characterImages = { // Đường dẫn đến hình ảnh nhân vật
 
 const MAX_ROUNDS = 5; // Số vòng chơi tối đa
 
-function SheepCountingGame() {
+function SheepColorCountingGame() {
   const navigate = useNavigate(); // Dùng để điều hướng đến các trang khác
   const [round, setRound] = useState(1); // Biến đếm số vòng chơi
   const [name, setName] = useState(""); // Tên của nhân vật hiện tại
@@ -646,4 +646,4 @@ const styles = {
   },
 };
 
-export default SheepCountingGame;
+export default SheepColorCountingGame;
