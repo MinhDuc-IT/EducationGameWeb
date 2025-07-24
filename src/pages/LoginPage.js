@@ -107,7 +107,7 @@ const styles = {
     textAlign: "center",
     position: "relative",
     height: "100vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundPosition: "center",
     justifyContent: "center",
     alignItems: "center",

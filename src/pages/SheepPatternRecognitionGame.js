@@ -11,7 +11,8 @@ import ConfirmModal from "../components/ConfirmModal";
 import GameStats from "../components/GameStats";
 
 const names = ["Luna", "Max", "Olivia", "Leo", "Emma", "Noah", "Mia", "Ethan"]; // danh sách tên nhân vật
-const characterImages = { // ánh xạ tên nhân vật với hình ảnh
+const characterImages = {
+  // ánh xạ tên nhân vật với hình ảnh
   Luna: "/sheepgame/images/character-luna.png",
   Max: "/sheepgame/images/character-max.png",
   Olivia: "/sheepgame/images/character-olivia.png",
@@ -24,52 +25,111 @@ const characterImages = { // ánh xạ tên nhân vật với hình ảnh
 
 const MAX_ROUNDS = 5; // số vòng chơi tối đa
 
-function SheepCountingGame() {
+// Danh sách màu
+const COLORS = ["red", "blue", "green", "yellow", "purple"];
+
+// Tạo pattern theo quy luật và độ khó
+function generatePattern(round) {
+  const length = 4 + round; // tăng dần số lượng cừu
+  const ruleType = round <= 2 ? "repeat" : "alternate"; // càng về sau càng khó
+  const color1 = COLORS[Math.floor(Math.random() * COLORS.length)];
+  let color2 = COLORS[Math.floor(Math.random() * COLORS.length)];
+  while (color2 === color1) {
+    color2 = COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+
+  const pattern = [];
+  if (ruleType === "repeat") {
+    for (let i = 0; i < length; i++) {
+      pattern.push(i % 2 === 0 ? color1 : color2);
+    }
+  } else if (ruleType === "alternate") {
+    const sequence = [color1, color2, color1];
+    for (let i = 0; i < length; i++) {
+      pattern.push(sequence[i % sequence.length]);
+    }
+  }
+
+  const missingIndex = Math.floor(Math.random() * length);
+  const correctAnswer = pattern[missingIndex];
+  pattern[missingIndex] = null;
+
+  const options = [correctAnswer];
+  while (options.length < 3) {
+    const randColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    if (!options.includes(randColor)) {
+      options.push(randColor);
+    }
+  }
+  console.log("options: ", options);
+  console.log("correntAnswer: ", correctAnswer);
+  console.log("missingIndex: ", missingIndex);
+
+  return {
+    pattern,
+    correctAnswer,
+    options: shuffleArray(options),
+    missingIndex,
+  };
+}
+
+// Trộn mảng
+function shuffleArray(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+function SheepPatternRecognitionGame() {
   const navigate = useNavigate(); // dùng để điều hướng đến trang SheepIntro
   const [round, setRound] = useState(1); // vòng chơi hiện tại
   const [name, setName] = useState(""); // tên nhân vật hiện tại
   const [count, setCount] = useState(0); // số lượng cừu cần đếm
-  const [clickedSheep, setClickedSheep] = useState([]); // danh sách các cừu đã được click
-  const [sheepPositions, setSheepPositions] = useState([]); // vị trí của các chú cừu
   const [options, setOptions] = useState([]); // các lựa chọn số lượng cừu (đáp án và các lựa chọn sai)
   const [selectedWrong, setSelectedWrong] = useState([]); // các lựa chọn sai đã được chọn
   const [message, setMessage] = useState(""); // thông báo hiển thị sau khi chọn đáp án
-  const [showOptions, setShowOptions] = useState(false); // hiển thị các lựa chọn số lượng cừu
+  const [showOptions, setShowOptions] = useState(true); // hiển thị các lựa chọn số lượng cừu
   const [hasSpokenIntro, setHasSpokenIntro] = useState(false); // cờ để xác định đã phát âm thanh giới thiệu hay chưa
   const [shouldSpeakQuestion, setShouldSpeakQuestion] = useState(false); // cờ để xác định có nên phát âm thanh câu hỏi hay không
   const [shouldSpeakIntro, setShouldSpeakIntro] = useState(false); // cờ để xác định có nên phát âm thanh giới thiệu hay không
-  const [hideCorrectAnswer, setHideCorrectAnswer] = useState(false);  // cờ để ẩn đáp án đúng sau khi chọn
+  const [hideCorrectAnswer, setHideCorrectAnswer] = useState(false); // cờ để ẩn đáp án đúng sau khi chọn
   const [showCharacter, setShowCharacter] = useState(true); // hiển thị nhân vật
   const [startTime, setStartTime] = useState(null); // thời gian bắt đầu trò chơi
   const [correctFirstTryCount, setCorrectFirstTryCount] = useState(0); // số lần chọn đúng ở lần thử đầu tiên
-  const [correctSecondTryCount, setCorrectSecondTryCount] = useState(0);  // số lần chọn đúng ở lần thử thứ hai
+  const [correctSecondTryCount, setCorrectSecondTryCount] = useState(0); // số lần chọn đúng ở lần thử thứ hai
   const [totalWrongCount, setTotalWrongCount] = useState(0); // tổng số lần chọn sai
   const [currentWrongCount, setCurrentWrongCount] = useState(0); // số lần chọn sai trong vòng chơi hiện tại
   const [showConfirmModal, setShowConfirmModal] = useState(false); // hiển thị modal xác nhận khi người dùng muốn thoát trò chơi
 
-  useEffect(() => { // khi component mount, bắt đầu vòng chơi mới
+  const [patternData, setPatternData] = useState([]);
+  //const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [missingIndex, setMissingIndex] = useState(null);
+
+  useEffect(() => {
+    // khi component mount, bắt đầu vòng chơi mới
     startNewRound();
     setStartTime(new Date().toISOString()); // khi component mount, lưu thời gian bắt đầu
   }, []);
 
-  useEffect(() => { // khi có sự thay đổi về tên nhân vật hoặc vòng chơi, phát âm thanh giới thiệu hoặc câu hỏi
+  useEffect(() => {
+    // khi có sự thay đổi về tên nhân vật hoặc vòng chơi, phát âm thanh giới thiệu hoặc câu hỏi
     if (shouldSpeakIntro) {
       speak(
-        "Click on the sheep to count them. Then, select the correct number.",
+        "Recognize the pattern of sheep ,then select the correct color sheep.",
         1.2,
         1.6
       );
       setShouldSpeakIntro(false); // đặt lại cờ sau khi đã phát âm thanh giới thiệu
       setTimeout(() => setShouldSpeakQuestion(true), 4000);
-    } else if (shouldSpeakQuestion) { // nếu cờ để phát âm thanh câu hỏi được đặt
+    } else if (shouldSpeakQuestion) {
+      // nếu cờ để phát âm thanh câu hỏi được đặt
       setTimeout(() => {
-        speak(`How many sheep does ${name} have?`, 1, 1.5);
+        speak(`Which color sheep should ${name} put in the mark question?`, 1, 1.5);
       }, 3000); // phát âm thanh câu hỏi sau 3 giây
       setShouldSpeakQuestion(false); // đặt lại cờ sau khi đã phát âm thanh câu hỏi
     }
   }, [shouldSpeakIntro, shouldSpeakQuestion, name]); // theo dõi sự thay đổi của các cờ và tên nhân vật
 
-  const speak = (text, rate = 1, pitch = 1) => { // hàm để phát âm thanh
+  const speak = (text, rate = 1, pitch = 1) => {
+    // hàm để phát âm thanh
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
@@ -85,10 +145,11 @@ function SheepCountingGame() {
     window.speechSynthesis.speak(utter);
   };
 
-  const submitGameSession = async ( // hàm để gửi thông tin phiên chơi game lên server
+  const submitGameSession = async (
+    // hàm để gửi thông tin phiên chơi game lên server
     startTime,
     endTime,
-    gameType = "SheepCounting",
+    gameType = "SheepPatternRecognition",
     maxRounds,
     correctFirstTry,
     correctSecondTry,
@@ -118,16 +179,18 @@ function SheepCountingGame() {
     }
   };
 
-  const startNewRound = () => { // hàm để bắt đầu vòng chơi mới
-    if (round > MAX_ROUNDS) { // nếu đã đạt đến số vòng chơi tối đa
+  const startNewRound = () => {
+    // hàm để bắt đầu vòng chơi mới
+    if (round > MAX_ROUNDS) {
+      // nếu đã đạt đến số vòng chơi tối đa
       speak("Great job!", 1.1, 1.6);
       setTimeout(() => {
         speak(
-          "You counted all the sheep! Do you want to play again?",
+          "You recognize all the sheep pattern! Do you want to play again?",
           1.1,
           1.6
         );
-        navigate("/sheep-intro"); // điều hướng về trang SheepIntro
+        navigate("/sheep-pattern-intro"); // điều hướng về trang SheepIntro
       }, 2000);
       return;
     }
@@ -135,21 +198,28 @@ function SheepCountingGame() {
     // nếu chưa đến số vòng chơi tối đa, reset các trạng thái
     playSound("/sheepgame/sounds/footsteps.mp3", 1);
     playSound("/sheepgame/sounds/sheep-baa2.mp3", 1);
+
+    console.log("round: ", round);
+    const pattern = generatePattern(round);
+    setPatternData(pattern);
+    console.log("patternData: ", patternData);
+
+    setMissingIndex(pattern.missingIndex); // Cập nhật missingIndex từ pattern
+
+    // Sinh đáp án đúng và các đáp án sai
+    const correctColor = pattern.correctAnswer;
+    const wrongOptions = generateWrongOptions(correctColor);
+    const shuffledOptions = shuffleArray([correctColor, ...wrongOptions]);
+    setOptions(shuffledOptions);
     
-    const newCount = Math.floor(Math.random() * 10) + 1; // số lượng cừu ngẫu nhiên từ 1 đến 10
+
     const newName = names[Math.floor(Math.random() * names.length)]; // chọn ngẫu nhiên tên nhân vật từ danh sách
-    const wrongOptions = generateWrongOptions(newCount); // tạo các lựa chọn sai (2 lựa chọn không trùng với số lượng cừu)
-    const newPositions = generateNonOverlappingPositions(newCount, []); // tạo vị trí ngẫu nhiên cho các chú cừu, đảm bảo không trùng lặp
 
     setName(newName); // cập nhật tên nhân vật
-    setCount(newCount); // cập nhật số lượng cừu
-    setClickedSheep([]); // reset danh sách các cừu đã click
     setSelectedWrong([]); // reset danh sách các lựa chọn sai đã chọn
     setMessage(""); // reset thông báo
-    setOptions(shuffleArray([newCount, ...wrongOptions])); // cập nhật các lựa chọn số lượng cừu (bao gồm đáp án đúng và các lựa chọn sai)
-    setShowOptions(false); // ẩn các lựa chọn số lượng cừu
+    //setShowOptions(false); // ẩn các lựa chọn số lượng cừu
     setHideCorrectAnswer(false); // không ẩn đáp án đúng
-    setSheepPositions(newPositions); // cập nhật vị trí của các chú cừu
     setShowCharacter(true); // hiển thị nhân vật
 
     if (!hasSpokenIntro) {
@@ -160,89 +230,44 @@ function SheepCountingGame() {
     }
   };
 
-  const generateWrongOptions = (correct) => { // hàm để tạo các lựa chọn sai (2 lựa chọn không trùng với số lượng cừu)
-    let wrongs = new Set(); // sử dụng Set để đảm bảo các lựa chọn sai không trùng lặp
-    while (wrongs.size < 2) { // tạo 2 lựa chọn sai
-      const n = Math.floor(Math.random() * 10) + 1; // số lượng cừu ngẫu nhiên từ 1 đến 10
-      if (n !== correct) wrongs.add(n); // nếu số lượng cừu không trùng với đáp án đúng thì thêm vào Set
-    }
-    return Array.from(wrongs); // chuyển Set thành mảng
+  const sheepColors = ["red", "blue", "green", "yellow", "purple"]; // Danh sách các màu sắc có thể chọn
+
+  const generateWrongOptions = (correctColor) => {
+    const available = sheepColors.filter((color) => color !== correctColor);
+    shuffleArray(available); // Trộn để chọn ngẫu nhiên
+    return available.slice(0, 2); // Lấy 2 màu sai
   };
 
   const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5); // hàm để xáo trộn mảng
 
-  const generateNonOverlappingPositions = (n) => { // hàm để tạo vị trí ngẫu nhiên cho các chú cừu, đảm bảo không trùng lặp
-    const positions = []; // mảng để lưu trữ các vị trí của các chú cừu
-    while (positions.length < n) { // lặp cho đến khi đủ số lượng cừu
-      const pos = getRandomPosition(); // lấy vị trí ngẫu nhiên
-      const isOverlapping = positions.some( // kiểm tra xem vị trí này có trùng với vị trí nào đã có không
-        (p) =>
-          Math.abs(parseFloat(p.left) - parseFloat(pos.left)) < 12 &&
-          Math.abs(parseFloat(p.top) - parseFloat(pos.top)) < 12
-      ); // kiểm tra khoảng cách giữa các vị trí, nếu nhỏ hơn 12px thì coi là trùng lặp
-      if (!isOverlapping) { // nếu không trùng lặp
-        positions.push(pos); // thêm vị trí này vào mảng
-      }
-    }
-    return positions; // trả về mảng các vị trí đã tạo
-  };
-
-  const getRandomPosition = () => { // hàm để lấy vị trí ngẫu nhiên cho các chú cừu
-    const x = Math.random() * 80 + 10; // vị trí ngang ngẫu nhiên từ 10% đến 90% của khung chơi
-    const y = Math.random() * 30 + 60; // vị trí dọc ngẫu nhiên từ 60% đến 90% của khung chơi (để nằm ở phần dưới của khung chơi)
-    return { left: `${x}%`, top: `${y}%` };
-  };
-
-  const handleSheepClick = (index) => { // hàm để xử lý khi người dùng click vào một chú cừu
-    if (!clickedSheep.includes(index)) { // nếu chú cừu chưa được click
-      playSound("/sheepgame/sounds/sheep-baa.mp3", 1); 
-      const newClicked = [...clickedSheep, index]; // thêm chú cừu vào danh sách các cừu đã click
-      setClickedSheep(newClicked); // cập nhật danh sách các cừu đã click
-      speak(newClicked.length.toString(), 1.3, 1.6); // phát âm thanh số lượng cừu đã click
-
-      const newPositions = sheepPositions.map((pos, i) => { // cập nhật vị trí của các chú cừu
-        if (newClicked.includes(i)) return pos; // nếu chú cừu đã được click thì giữ nguyên vị trí
-        let newPos; 
-        do { // nếu chú cừu chưa được click, tìm vị trí mới ngẫu nhiên
-          newPos = getRandomPosition();
-        } while ( // kiểm tra vị trí mới có trùng với các chú cừu đã click hay không
-          newClicked.some((clickedIdx) => { // kiểm tra từng chú cừu đã click
-            const clickedPos = sheepPositions[clickedIdx]; // lấy vị trí của chú cừu đã click
-            return (
-              Math.abs(parseFloat(clickedPos.left) - parseFloat(newPos.left)) <
-                12 &&
-              Math.abs(parseFloat(clickedPos.top) - parseFloat(newPos.top)) < 12
-            ); // nếu khoảng cách giữa vị trí mới và vị trí của chú cừu đã click nhỏ hơn 12px thì coi là trùng lặp
-          })
-        );
-        return newPos; // trả về vị trí mới nếu không trùng lặp
-      });
-
-      setSheepPositions(newPositions); // cập nhật vị trí của các chú cừu
-
-      if (newClicked.length === count) { // nếu số lượng cừu đã click bằng với số lượng cừu cần đếm
-        setShowOptions(true); // hiển thị các lựa chọn số lượng cừu (đáp án và các lựa chọn sai)
-      }
-    }
-  };
-
-  const handleOptionClick = (number) => { // hàm để xử lý khi người dùng click vào một lựa chọn số lượng cừu (đáp án hoặc lựa chọn sai)
+  const handleOptionClick = (color) => {
+    // hàm để xử lý khi người dùng click vào một lựa chọn số lượng cừu (đáp án hoặc lựa chọn sai)
     let newTotalWrongCount = totalWrongCount; // biến để lưu tổng số lần chọn sai
+    //if (selectedAnswer !== null) return;
+    //if (selectedAnswer === patternData.correctAnswer) return;
+    
     if (!showOptions) return; // nếu chưa hiển thị các lựa chọn số lượng cừu thì không làm gì cả
-    if (number === count) { // nếu người dùng chọn đáp án đúng
+    //setSelectedAnswer(color);
+    const correctColor = patternData.correctAnswer;
+    console.log("patternData[missingIndex]: ", patternData[missingIndex]);
+    if (color === correctColor) {
+      // nếu người dùng chọn đáp án đúng
       playSound("/sheepgame/sounds/success.mp3", 1);
       setTimeout(() => speak("Exactly!", 1, 1.8), 1000);
       setMessage("🎉 Exactly!");
-      setSelectedWrong(options.filter((opt) => opt !== number)); // lọc các lựa chọn sai đã chọn, chỉ giữ lại các lựa chọn đúng
+      //setSelectedAnswer(null);
+      setSelectedWrong(patternData.options.filter((opt) => opt !== color)); // lọc các lựa chọn sai đã chọn, chỉ giữ lại các lựa chọn đúng
 
       let newFirstTryCount = correctFirstTryCount; // số lần chọn đúng ở lần thử đầu tiên
       let newSecondTryCount = correctSecondTryCount; // số lần chọn đúng ở lần thử thứ hai
 
-      if (currentWrongCount === 0) { // nếu không có lần chọn sai nào trong vòng chơi này
+      if (currentWrongCount === 0) {
+        // nếu không có lần chọn sai nào trong vòng chơi này
         newFirstTryCount += 1; // tăng số lần chọn đúng ở lần thử đầu tiên
-        setCorrectFirstTryCount(newFirstTryCount); 
+        setCorrectFirstTryCount(newFirstTryCount);
         console.log("Correct on first try:", newFirstTryCount);
-      } else if (currentWrongCount === 1) { // nếu có một lần chọn sai trong vòng chơi này
+      } else if (currentWrongCount === 1) {
+        // nếu có một lần chọn sai trong vòng chơi này
         newSecondTryCount += 1; // tăng số lần chọn đúng ở lần thử thứ hai
         setCorrectSecondTryCount(newSecondTryCount);
         console.log("Correct on second try:", newSecondTryCount);
@@ -252,7 +277,8 @@ function SheepCountingGame() {
 
       setTimeout(() => setHideCorrectAnswer(true), 1500); // ẩn đáp án đúng sau 1.5 giây
 
-      if (round >= MAX_ROUNDS) { // nếu đã đạt đến số vòng chơi tối đa
+      if (round >= MAX_ROUNDS) {
+        // nếu đã đạt đến số vòng chơi tối đa
         const endTime = new Date().toISOString(); // thời gian kết thúc
         //const userId = localStorage.getItem("userId");
 
@@ -264,11 +290,12 @@ function SheepCountingGame() {
         console.log("Correct Second Try Count:", correctSecondTryCount);
         console.log("Total Wrong Count:", totalWrongCount);
 
-        submitGameSession( // gửi thông tin phiên chơi game lên server
+        submitGameSession(
+          // gửi thông tin phiên chơi game lên server
           //userId,
           startTime,
           endTime,
-          "SheepCounting",
+          "SheepPatternRecognition",
           MAX_ROUNDS,
           newFirstTryCount,
           newSecondTryCount,
@@ -283,46 +310,41 @@ function SheepCountingGame() {
               1.1,
               1.6
             );
-            navigate("/sheep-intro"); // điều hướng về trang SheepIntro
+            navigate("/sheep-pattern-intro"); // điều hướng về trang SheepIntro
           }, 2000);
         }, 1800);
-      } else { // nếu chưa đạt đến số vòng chơi tối đa
+      } else {
+        // nếu chưa đạt đến số vòng chơi tối đa
         // Animate thoát
         setTimeout(() => setShowCharacter(false), 1800);
         setTimeout(() => {
           setMessage("");
           setRound((prev) => prev + 1); // tăng vòng chơi lên 1
-          startNewRound();  // bắt đầu vòng chơi mới
+          startNewRound(); // bắt đầu vòng chơi mới
         }, 2200);
       }
-    } else { // nếu người dùng chọn một lựa chọn sai
+    } else {
+      // nếu người dùng chọn một lựa chọn sai
       playSound("/sheepgame/sounds/fail.mp3", 1);
       setTimeout(() => speak("Try again", 1.0, 1.2), 1000);
       setMessage("❌ Try again");
-      setSelectedWrong([...selectedWrong, number]); // thêm lựa chọn sai vào danh sách các lựa chọn sai đã chọn
+      setSelectedWrong([...selectedWrong, color]); // thêm lựa chọn sai vào danh sách các lựa chọn sai đã chọn
       setCurrentWrongCount((prev) => prev + 1); // tăng số lần chọn sai trong vòng chơi hiện tại
       setTotalWrongCount((prev) => prev + 1); // tăng tổng số lần chọn sai
-      newTotalWrongCount = totalWrongCount + 1; 
+      newTotalWrongCount = totalWrongCount + 1;
       console.log("Total wrong count:", newTotalWrongCount);
     }
   };
 
-  const playSound = (src, volume = 1) => { // hàm để phát âm thanh
+  const playSound = (src, volume = 1) => {
+    // hàm để phát âm thanh
     const audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch((err) => console.error("Error playing audio:", err));
   };
 
-  const handleExitClick = () => { // hàm để xử lý khi người dùng muốn thoát trò chơi
-    const confirmed = window.confirm(
-      "Do you want to cancel this game session? Your progress will not be saved."
-    );
-    if (confirmed) {
-      navigate("/sheep-intro");
-    }
-  };
-
-  return ( // giao diện của trò chơi
+  return (
+    // giao diện của trò chơi
     <div style={styles.container}>
       {/* hình ảnh con cừu bên trái */}
       <img
@@ -339,7 +361,7 @@ function SheepCountingGame() {
         transition={{ duration: 2.5 }}
         style={styles.question}
       >
-        How many sheep does <strong>{name}</strong> have?
+        Which color sheep should <strong>{name}</strong> put in the mark question?
       </motion.div>
 
       {/* hướng dẫn (hiệu ứng từ dưới lên) */}
@@ -351,7 +373,7 @@ function SheepCountingGame() {
         transition={{ duration: 0.5 }}
         style={styles.instruction}
       >
-        Click on the sheep to count them. Then, select the correct number.
+        Recognize the pattern of sheep ,then select the correct color sheep.
       </motion.div>
 
       {/* khung chơi game ở giữa, hình ảnh đồng cỏ */}
@@ -367,21 +389,50 @@ function SheepCountingGame() {
             />
           )}
         </AnimatePresence>
+        {/* Hiển thị hàng cừu pattern */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "absolute",
+            left: "15vw",
+            top: "45vh",
+            margin: "5vh auto",
+          }}
+        >
 
-        {/* hiển thị các chú cừu */}
-        {sheepPositions.map((pos, i) => (
-          <Sheep
-            key={i}
-            index={i}
-            pos={pos}
-            clicked={clickedSheep.includes(i)}
-            onClick={() => handleSheepClick(i)}
-          />
-        ))}
+          {patternData &&
+            Array.isArray(patternData.pattern) &&
+            patternData.pattern.map((color, index) => {
+              if (index === patternData.missingIndex) {
+                return (
+                  <Sheep
+                    key={index}
+                    index={index}
+                    pos={{ top: 0, left: `${index * 12}vh` }}
+                    clicked={false}
+                    onClick={() => {}}
+                    srcImg={`/sheepgame/images/question-mark.png`}
+                  />
+                );
+              }
 
+              return (
+                <Sheep
+                  key={index}
+                  index={index}
+                  pos={{ top: 0, left: `${index * 12}vh` }}
+                  clicked={false}
+                  onClick={() => {}}
+                  srcImg={`/sheepgame/images/sheep-${color}.png`}
+                />
+              );
+            })}
+        </div>
         {/* hiển thị các lựa chọn số lượng cừu (đáp án và các lựa chọn sai) */}
         <AnimatePresence>
-          {showOptions && (
+          {showOptions && patternData && patternData.options && (
             <motion.div
               key="options"
               initial={{ opacity: 0 }}
@@ -390,12 +441,12 @@ function SheepCountingGame() {
               transition={{ duration: 0.5 }}
               style={styles.options}
             >
-              {options.map((num) => ( // lặp qua các lựa chọn số lượng cừu
+              {patternData.options.map((option, index) => (
                 <Option
-                  key={num}
-                  num={num}
-                  isCorrect={num === count}
-                  isWrong={selectedWrong.includes(num)}
+                  key={index}
+                  num={option}
+                  isCorrect={option === patternData.correctAnswer}
+                  isWrong={selectedWrong.includes(option)}
                   hide={hideCorrectAnswer}
                   message={message}
                   onClick={handleOptionClick}
@@ -404,7 +455,6 @@ function SheepCountingGame() {
             </motion.div>
           )}
         </AnimatePresence>
-
         <SoundToggleButton /> {/* nút bật/tắt âm thanh */}
       </div>
       {/* hiển thị thông tin phiên chơi game */}
@@ -424,7 +474,7 @@ function SheepCountingGame() {
       <ConfirmModal
         visible={showConfirmModal}
         message="Do you want to cancel this game session? Your progress will not be saved."
-        onConfirm={() => navigate("/sheep-intro")}
+        onConfirm={() => navigate("/sheep-pattern-intro")}
         onCancel={() => setShowConfirmModal(false)}
       />
     </div>
@@ -574,4 +624,4 @@ const styles = {
   },
 };
 
-export default SheepCountingGame;
+export default SheepPatternRecognitionGame;

@@ -12,14 +12,14 @@ import GameStats from "../components/GameStats";
 
 const names = ["Luna", "Max", "Olivia", "Leo", "Emma", "Noah", "Mia", "Ethan"]; // Danh sách tên nhân vật
 const characterImages = { // Đường dẫn đến hình ảnh nhân vật
-  Luna: "/images/character-luna.png",
-  Max: "/images/character-max.png",
-  Olivia: "/images/character-olivia.png",
-  Leo: "/images/character-leo.png",
-  Emma: "/images/character-emma.png",
-  Noah: "/images/character-noah.png",
-  Mia: "/images/character-mia.png",
-  Ethan: "/images/character-ethan.png",
+  Luna: "/sheepgame/images/character-luna.png",
+  Max: "/sheepgame/images/character-max.png",
+  Olivia: "/sheepgame/images/character-olivia.png",
+  Leo: "/sheepgame/images/character-leo.png",
+  Emma: "/sheepgame/images/character-emma.png",
+  Noah: "/sheepgame/images/character-noah.png",
+  Mia: "/sheepgame/images/character-mia.png",
+  Ethan: "/sheepgame/images/character-ethan.png",
 };
 
 const MAX_ROUNDS = 5; // Số vòng chơi tối đa
@@ -144,8 +144,8 @@ function SheepColorCountingGame() {
 
     // nếu chưa chơi đủ số vòng, reset các biến và bắt đầu vòng mới
 
-    playSound("/sounds/footsteps.mp3", 1);
-    playSound("/sounds/sheep-baa2.mp3", 1);
+    playSound("/sheepgame/sounds/footsteps.mp3", 1);
+    playSound("/sheepgame/sounds/sheep-baa2.mp3", 1);
 
     const totalSheepCount = Math.floor(Math.random() * 10) + 1; // Số lượng cừu ngẫu nhiên từ 1 đến 10
     const coloredSheepCount = Math.floor(Math.random() * totalSheepCount) + 1; // Số lượng cừu có màu đặc biệt, ít nhất là 1 và không vượt quá tổng số cừu
@@ -216,7 +216,7 @@ function SheepColorCountingGame() {
 
   const handleSheepClick = (index) => { // Hàm xử lý khi người chơi click vào cừu
     if (!clickedSheep.includes(index)) { // Nếu cừu chưa được click
-      playSound("/sounds/sheep-baa.mp3", 1); 
+      playSound("/sheepgame/sounds/sheep-baa.mp3", 1); 
       const newClicked = [...clickedSheep, index]; // Thêm cừu vào mảng đã click
       if (colorMap[index]) {  // Nếu cừu có màu đặc biệt
         setClickedSheep(newClicked);  // Cập nhật mảng cừu đã click
@@ -254,7 +254,7 @@ function SheepColorCountingGame() {
     let newTotalWrongCount = totalWrongCount; // Biến để lưu trữ tổng số lần người chơi chọn sai
     if (!showOptions) return; // Nếu chưa hiển thị các lựa chọn, không làm gì cả
     if (number === coloredSheepCount) { // Nếu người chơi chọn đúng số lượng cừu có màu đặc biệt
-      playSound("/sounds/success.mp3", 1);
+      playSound("/sheepgame/sounds/success.mp3", 1);
       setTimeout(() => speak("Exactly!", 1, 1.8), 1000);
       setMessage("🎉 Exactly!");
       setSelectedWrong(options.filter((opt) => opt !== number)); // Lọc các lựa chọn sai đã chọn
@@ -320,7 +320,7 @@ function SheepColorCountingGame() {
         }, 2200);
       }
     } else { // Nếu người chơi chọn sai số lượng cừu
-      playSound("/sounds/fail.mp3", 1);
+      playSound("/sheepgame/sounds/fail.mp3", 1);
       setTimeout(() => speak("Try again", 1.0, 1.2), 1000);
       setMessage("❌ Try again");
       setSelectedWrong([...selectedWrong, number]); // Thêm lựa chọn sai vào mảng đã chọn
@@ -388,7 +388,7 @@ function SheepColorCountingGame() {
     <div style={styles.container}>
       {/* hình ảnh cừu bên trái */}
       <img
-        src="/images/sheep-left.png"
+        src="/sheepgame/images/sheep-left.png"
         alt="Sheep Left"
         style={styles.sheepLeft}
       />
@@ -444,8 +444,8 @@ function SheepColorCountingGame() {
             onClick={() => handleSheepClick(i)}
             srcImg={
               colorMap[i]
-                ? `/images/sheep-${targetColor}.png`
-                : "/images/sheep.png"
+                ? `/sheepgame/images/sheep-${targetColor}.png`
+                : "/sheepgame/images/sheep.png"
             }
           />
         ))}
@@ -511,7 +511,7 @@ const styles = {
     textAlign: "center",
     position: "relative",
     height: "100vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundPosition: "center",
   },
   sheepLeft: {
@@ -548,7 +548,7 @@ const styles = {
     width: "60vw",
     margin: "0 auto",
     height: "80vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundSize: "cover",
     backgroundPosition: "center",
     borderRadius: "12px",

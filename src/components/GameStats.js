@@ -69,12 +69,12 @@ function GameStats({
         {bonus && <span style={styles.bonus}>{bonus}</span>}
       </div>
       <img
-        src="/images/sheep-stats.png"
+        src="/sheepgame/images/sheep-stats.png"
         alt="Stats Icon"
         style={styles.sheep}
       />
       <img
-        src="/images/grass-land.png"
+        src="/sheepgame/images/grass-land.png"
         alt="Stats Icon"
         style={styles.grassLand}
       />

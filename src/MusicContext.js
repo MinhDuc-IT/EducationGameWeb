@@ -36,7 +36,7 @@
 
 //   return (
 //     <MusicContext.Provider value={{}}>
-//       <audio ref={audioRef} src="/sounds/background-music.mp3" />
+//       <audio ref={audioRef} src="/sheepgame/sounds/background-music.mp3" />
 //       {children}
 //     </MusicContext.Provider>
 //   );
@@ -92,7 +92,7 @@ export function MusicProvider({ children }) {
 
   return (
     <MusicContext.Provider value={{ isMuted, toggleMute }}>
-      <audio ref={audioRef} src="/sounds/background-music.mp3" />
+      <audio ref={audioRef} src="/sheepgame/sounds/background-music.mp3" />
       {children}
     </MusicContext.Provider>
   );

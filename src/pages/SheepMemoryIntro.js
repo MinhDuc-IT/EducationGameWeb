@@ -72,7 +72,7 @@ function SheepMemoryIntro() {
     <div style={styles.container}>
       {/* Hình ảnh con cừu bên trái */}
       <motion.img
-        src="/images/sheep-left.png"
+        src="/sheepgame/images/sheep-left.png"
         alt="Sheep Left"
         initial={{ x: -500, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -154,7 +154,7 @@ const styles = {
     textAlign: "center",
     position: "relative",
     height: "100vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundPosition: "center",
   },
   homeButton: {
@@ -190,7 +190,7 @@ const styles = {
     width: "60vw",
     margin: "0 auto",
     height: "80vh",
-    backgroundImage: `url(/images/sheepIntro.png), url(/images/grass.png)`,
+    backgroundImage: `url(/sheepgame/images/sheepIntro.png), url(/sheepgame/images/grass.png)`,
     backgroundSize: "40vw, cover", // sheepIntro giữ nguyên kích thước, grass trải rộng
     backgroundRepeat: "no-repeat, no-repeat",
     backgroundPosition: "center bottom, center",

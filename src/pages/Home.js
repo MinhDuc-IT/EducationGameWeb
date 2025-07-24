@@ -7,20 +7,26 @@ const games = [
   {
     title: "Sheep Counting",
     description: "Count all the sheep correctly!",
-    image: "/images/sheep.png",
+    image: "/sheepgame/images/sheep.png",
     path: "/sheep-intro",
   },
   {
     title: "Colored Sheep Counting",
     description: "Count only the colored sheep!",
-    image: "/images/sheep-red.png",
+    image: "/sheepgame/images/sheep-red.png",
     path: "/sheep-color-intro",
   },
   {
     title: "Sheep Memory Match",
     description: "Match pairs of sheep images!",
-    image: "/images/sheep-purple.png",
+    image: "/sheepgame/images/sheep-purple.png",
     path: "/sheep-memory-intro",
+  },
+  {
+    title: "Sheep Pattern Recognition",
+    description: "Recognize patterns of sheep!",
+    image: "/sheepgame/images/sheep-black.png",
+    path: "/sheep-pattern-intro",
   },
 ];
 

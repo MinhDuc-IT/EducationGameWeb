@@ -1,3 +1,228 @@
+// import { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { motion } from "framer-motion";
+// import SoundToggleButton from "../components/SoundToggleButton";
+// import Character from "../components/Character";
+
+// // Danh sách màu
+// const COLORS = ["red", "blue", "green", "yellow", "orange", "purple"];
+
+// // Tạo pattern theo quy luật và độ khó
+// function generatePattern(round) {
+//   const length = 4 + round; // tăng dần số lượng cừu
+//   const ruleType = round <= 2 ? "repeat" : "alternate"; // càng về sau càng khó
+//   const color1 = COLORS[Math.floor(Math.random() * COLORS.length)];
+//   let color2 = COLORS[Math.floor(Math.random() * COLORS.length)];
+//   while (color2 === color1) {
+//     color2 = COLORS[Math.floor(Math.random() * COLORS.length)];
+//   }
+
+//   const pattern = [];
+//   if (ruleType === "repeat") {
+//     for (let i = 0; i < length; i++) {
+//       pattern.push(i % 2 === 0 ? color1 : color2);
+//     }
+//   } else if (ruleType === "alternate") {
+//     const sequence = [color1, color2, color1];
+//     for (let i = 0; i < length; i++) {
+//       pattern.push(sequence[i % sequence.length]);
+//     }
+//   }
+
+//   const missingIndex = Math.floor(Math.random() * length);
+//   const correctAnswer = pattern[missingIndex];
+//   pattern[missingIndex] = null;
+
+//   const options = [correctAnswer];
+//   while (options.length < 3) {
+//     const randColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+//     if (!options.includes(randColor)) {
+//       options.push(randColor);
+//     }
+//   }
+
+//   return {
+//     pattern,
+//     correctAnswer,
+//     options: shuffleArray(options),
+//     missingIndex,
+//   };
+// }
+
+// // Trộn mảng
+// function shuffleArray(array) {
+//   return [...array].sort(() => Math.random() - 0.5);
+// }
+
+// export default function SheepPatternRecognitionGame() {
+//   const navigate = useNavigate();
+//   const [round, setRound] = useState(1);
+//   const [patternData, setPatternData] = useState(null);
+//   const [selectedAnswer, setSelectedAnswer] = useState(null);
+//   const [showTryAgain, setShowTryAgain] = useState(false);
+
+//   useEffect(() => {
+//     setPatternData(generatePattern(round));
+//     setSelectedAnswer(null);
+//     setShowTryAgain(false);
+//   }, [round]);
+
+//   const handleAnswerClick = (color) => {
+//     if (selectedAnswer !== null) return;
+
+//     setSelectedAnswer(color);
+
+//     if (color === patternData.correctAnswer) {
+//       setTimeout(() => {
+//         if (round >= 5) {
+//           navigate("/sheepgame/result"); // Kết thúc game
+//         } else {
+//           setRound((prev) => prev + 1);
+//         }
+//       }, 1000);
+//     } else {
+//       setShowTryAgain(true);
+//     }
+//   };
+
+//   if (!patternData) return null;
+
+//   return (
+//     <div style={styles.container}>
+//       {/* nhân vật */}
+//       <Character />
+//       {/* nút âm thanh */}
+//       <SoundToggleButton />
+
+//       {/* câu hỏi */}
+//       <motion.div
+//         key={"question" + round}
+//         initial={{ scale: 0 }}
+//         animate={{ scale: 1 }}
+//         transition={{ duration: 0.3 }}
+//         style={styles.question}
+//       >
+//         Chọn chú cừu còn thiếu theo quy luật
+//       </motion.div>
+
+//       {/* các đáp án (các quả bóng màu) */}
+//       <div style={styles.answerContainer}>
+//         {patternData.options.map((color, i) => (
+//           <motion.div
+//             key={i}
+//             whileTap={{ scale: 0.9 }}
+//             onClick={() => handleAnswerClick(color)}
+//             style={{
+//               ...styles.balloon,
+//               backgroundColor: color,
+//               opacity: selectedAnswer && selectedAnswer !== color ? 0.5 : 1,
+//               cursor: selectedAnswer ? "default" : "pointer",
+//             }}
+//           />
+//         ))}
+//       </div>
+
+//       {/* hiển thị dòng cừu theo pattern */}
+//       <div style={styles.patternRow}>
+//         {patternData.pattern.map((color, i) => (
+//           <img
+//             key={i}
+//             src={
+//               color
+//                 ? `/sheepgame/images/sheep-${color}.png`
+//                 : "/sheepgame/images/blank-sheep.png"
+//             }
+//             alt="Sheep"
+//             style={styles.sheep}
+//           />
+//         ))}
+//       </div>
+
+//       {/* báo sai */}
+//       {showTryAgain && (
+//         <div style={styles.tryAgainText}>Sai rồi, thử lại nhé!</div>
+//       )}
+//     </div>
+//   );
+// }
+
+// const styles = {
+//   container: {
+//     position: "relative",
+//     width: "100vw",
+//     height: "100vh",
+//     backgroundColor: "#D6F6FF",
+//     display: "flex",
+//     flexDirection: "column",
+//     alignItems: "center",
+//     justifyContent: "center",
+//   },
+//   question: {
+//     fontSize: "2rem",
+//     fontWeight: "bold",
+//     marginBottom: "1rem",
+//     color: "#333",
+//   },
+//   answerContainer: {
+//     display: "flex",
+//     gap: "1rem",
+//     marginBottom: "2rem",
+//   },
+//   balloon: {
+//     width: "60px",
+//     height: "60px",
+//     borderRadius: "50%",
+//     border: "3px solid white",
+//     boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+//   },
+//   patternRow: {
+//     display: "flex",
+//     gap: "10px",
+//     justifyContent: "center",
+//     alignItems: "center",
+//     marginTop: "1rem",
+//   },
+//   sheep: {
+//     width: "80px",
+//     height: "80px",
+//   },
+//   tryAgainText: {
+//     marginTop: "1.5rem",
+//     fontSize: "1.5rem",
+//     color: "red",
+//     fontWeight: "bold",
+//   },
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,14 +236,14 @@ import PlayButton from "../components/PlayButton";
 import { pre, sub } from "framer-motion/client";
 
 const characterImages = {
-  Luna: "/images/character-luna.png",
-  Max: "/images/character-max.png",
-  Olivia: "/images/character-olivia.png",
-  Leo: "/images/character-leo.png",
-  Emma: "/images/character-emma.png",
-  Noah: "/images/character-noah.png",
-  Mia: "/images/character-mia.png",
-  Ethan: "/images/character-ethan.png",
+  Luna: "/sheepgame/images/character-luna.png",
+  Max: "/sheepgame/images/character-max.png",
+  Olivia: "/sheepgame/images/character-olivia.png",
+  Leo: "/sheepgame/images/character-leo.png",
+  Emma: "/sheepgame/images/character-emma.png",
+  Noah: "/sheepgame/images/character-noah.png",
+  Mia: "/sheepgame/images/character-mia.png",
+  Ethan: "/sheepgame/images/character-ethan.png",
 }; // mảng chứa hình ảnh của các nhân vật
 
 const MAX_ROUNDS = 5; // tổng số vòng chơi
@@ -97,7 +322,7 @@ export default function SheepMemoryMatchGame() {
   }, []);
 
   useEffect(() => {
-    playSound("/sounds/footsteps.mp3", 1); // phát âm thanh bước chân khi vào game
+    playSound("/sheepgame/sounds/footsteps.mp3", 1); // phát âm thanh bước chân khi vào game
     if (!hasSpokenIntro) {
       // nếu chưa nói lời giới thiệu
       setShouldSpeakIntro(true); // bật cờ để nói lời giới thiệu
@@ -117,7 +342,7 @@ export default function SheepMemoryMatchGame() {
       const [firstIdx, secondIdx] = flipped; // lấy chỉ số của 2 thẻ được lật
       if (cards[firstIdx].image === cards[secondIdx].image) {
         // nếu 2 thẻ có cùng hình ảnh
-        playSound("/sounds/success.mp3", 0.5); // phát âm thanh thành công
+        playSound("/sheepgame/sounds/success.mp3", 0.5); // phát âm thanh thành công
         const tries1 = flipAttempts[firstIdx] || 1; // lấy số lần lật của thẻ đầu tiên, nếu không có thì mặc định là 1
         const tries2 = flipAttempts[secondIdx] || 1; // lấy số lần lật của thẻ thứ hai, nếu không có thì mặc định là 1
         const maxTry = Math.max(tries1, tries2); // lấy số lần lật lớn nhất của 2 thẻ
@@ -174,14 +399,14 @@ export default function SheepMemoryMatchGame() {
           } else {
             // nếu chưa chơi đủ số vòng
             setTimeout(() => {
-              playSound("/sounds/sheep-baa2.mp3", 0.5);
+              playSound("/sheepgame/sounds/sheep-baa2.mp3", 0.5);
               setRound(round + 1); // tăng vòng chơi lên 1, chuyển sang vòng tiếp theo
             }, 1000);
           }
         }
       } else {
         // nếu 2 thẻ không cùng hình ảnh
-        playSound("/sounds/fail.mp3", 0.5);
+        playSound("/sheepgame/sounds/fail.mp3", 0.5);
         setWrongCount((prev) => prev + 1); // tăng số lần sai lên 1
         setTimeout(() => setFlipped([]), 1000); // reset mảng flipped sau 1 giây để chờ lật thẻ mới (để người chơi có thời gian nhìn thấy thẻ đã lật rồi úp lại)
       }
@@ -212,7 +437,7 @@ export default function SheepMemoryMatchGame() {
     setTimeout(() => {
       const allIndexes = cards.map((_, i) => i); // lấy tất cả chỉ số của các thẻ
       setShakingCardIndexes(allIndexes); // đặt mảng shakingCardIndexes để preview toàn bộ các thẻ
-      playSound("/sounds/shaken-bush.mp3", 1);
+      playSound("/sheepgame/sounds/shaken-bush.mp3", 1);
 
       setTimeout(() => {
         // sau 1 giây, lật tất cả các thẻ để người chơi có thể nhìn thấy
@@ -242,7 +467,7 @@ export default function SheepMemoryMatchGame() {
       return; // không làm gì cả
     }
     setShakingCardIndex(index); // đặt thẻ đang rung để tạo hiệu ứng rung khi click
-    playSound("/sounds/shaken-bush.mp3", 1);
+    playSound("/sheepgame/sounds/shaken-bush.mp3", 1);
     setFlipAttempts((prev) => ({
       ...prev,
       [index]: (prev[index] || 0) + 1,
@@ -251,7 +476,7 @@ export default function SheepMemoryMatchGame() {
       // sau 1 giây, lật thẻ được click
       setFlipped((prev) => [...prev, index]); // thêm chỉ số của thẻ được click vào mảng flipped
       setShakingCardIndex(null); // reset thẻ đang rung để không còn hiệu ứng rung
-      playSound("/sounds/sheep-baa.mp3", 1);
+      playSound("/sheepgame/sounds/sheep-baa.mp3", 1);
     }, 1000);
   };
 
@@ -306,7 +531,7 @@ export default function SheepMemoryMatchGame() {
     <div style={styles.container}>
       {/* hình ảnh con cừu bên trái */}
       <img
-        src="/images/sheep-left.png"
+        src="/sheepgame/images/sheep-left.png"
         alt="Sheep Left"
         style={styles.sheepLeft}
       />
@@ -419,8 +644,8 @@ export default function SheepMemoryMatchGame() {
                   <img
                     src={
                       isFlipped
-                        ? `/images/sheep-${card.image}.png`
-                        : "/images/card-back-bush.png"
+                        ? `/sheepgame/images/sheep-${card.image}.png`
+                        : "/sheepgame/images/card-back-bush.png"
                     }
                     alt="card"
                     style={{
@@ -473,7 +698,7 @@ const styles = {
     textAlign: "center",
     position: "relative",
     height: "100vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundPosition: "center",
   },
   cardContainer: {
@@ -523,7 +748,7 @@ const styles = {
     width: "60vw",
     margin: "0 auto",
     height: "80vh",
-    backgroundImage: "url(/images/grass.png)",
+    backgroundImage: "url(/sheepgame/images/grass.png)",
     backgroundSize: "cover",
     backgroundPosition: "center",
     borderRadius: "12px",

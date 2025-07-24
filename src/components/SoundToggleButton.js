@@ -13,7 +13,7 @@ function SoundToggleButton() {
         right: "2vw",
         width: "7vw",
         height: "7vw",
-        backgroundImage: "url('/images/sun.png')",
+        backgroundImage: "url('/sheepgame/images/sun.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         borderRadius: "50%",

@@ -1,7 +1,7 @@
 // src/pages/SheepIntro.jsx
 import { useNavigate } from "react-router-dom";
 import SoundToggleButton from "../components/SoundToggleButton";
-import { motion, AnimatePresence, color } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import PlayButton from "../components/PlayButton";
 import { useEffect, useState } from "react";
 import api from "../services/api";
@@ -9,8 +9,8 @@ import GameStats from "../components/GameStats";
 import GameSummary from "../components/GameSummary";
 import { FaHome } from "react-icons/fa";
 
-function SheepColorIntro() {
-  const navigate = useNavigate(); // dùng để điều hướng đến trang SheepColorCounting
+function SheepPatternIntro() {
+  const navigate = useNavigate(); // dùng để điều hướng đến trang SheepMemoryMatch
 
   const speak = (text, rate = 1, pitch = 1) => { // hàm để phát âm thanh
     window.speechSynthesis.cancel();
@@ -29,7 +29,7 @@ function SheepColorIntro() {
   };
 
   const [latestStats, setLatestStats] = useState(null); // trạng thái để lưu trữ thông tin phiên chơi game mới nhất
-  let gameType = "SheepColorCounting"; // loại trò chơi hiện tại
+  let gameType = "SheepPatternRecognition"; // loại trò chơi hiện tại
 
   useEffect(() => { // lấy thông tin phiên chơi game mới nhất từ API
     const fetchLatestStats = async () => {
@@ -68,9 +68,9 @@ function SheepColorIntro() {
     fetchSummary();
   }, []);
 
-  return ( // giao diện chính của trang SheepColorIntro
+  return ( // trả về giao diện của trang SheepMemoryIntro
     <div style={styles.container}>
-      {/* Hình ảnh cừu bên trái (hiệu ứng từ trái vào) */}
+      {/* Hình ảnh con cừu bên trái */}
       <motion.img
         src="/sheepgame/images/sheep-left.png"
         alt="Sheep Left"
@@ -90,7 +90,7 @@ function SheepColorIntro() {
         transition={{ duration: 2.0 }}
         style={styles.question}
       >
-        Are you ready to count some sheep?
+        Are you ready to find some sheep?
       </motion.div>
 
       {/* Hướng dẫn (hiệu ứng từ dưới lên) */}
@@ -105,17 +105,14 @@ function SheepColorIntro() {
         Click the button below to start your adventure!
       </motion.div>
 
-      {/* Khung chơi game ở giữa, hình ảnh đồng cỏ */}
+      {/* khung chơi game ở giữa, hình ảnh đồng cỏ */}
       <div style={styles.field}>
+        {/* hiển thị component thông số tổng hợp của trò chơi */}
         <GameSummary summary={summaryStats} />
 
-        <h1 style={styles.title}>
-          Welcome to Sheep <span style={styles.Color}>Color</span> Counting
-          Game!
-        </h1>
-
-        {/* nút play */}
+        <h1 style={styles.title}>Welcome to Sheep Pattern Recognition Game!</h1>
         <AnimatePresence>
+          {/* Hiển thị nút chơi game với hiệu ứng */}
           <motion.div
             key="play-button"
             initial={{ scale: 0.5, opacity: 0 }}
@@ -123,13 +120,13 @@ function SheepColorIntro() {
             exit={{ scale: 0.5, opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <PlayButton onClick={() => navigate("/sheep-color")} />
+            <PlayButton onClick={() => navigate("/sheep-pattern")} />
           </motion.div>
         </AnimatePresence>
         <SoundToggleButton /> {/* nút bật/tắt âm thanh */}
       </div>
 
-      {/* Hiển thị nút Home với biểu tượng */}
+      {/* Nút về trang chủ GameMap */}
       <button onClick={() => navigate("/")} style={styles.homeButton}>
         <FaHome size={24} />
       </button>
@@ -147,7 +144,7 @@ function SheepColorIntro() {
   );
 }
 
-export default SheepColorIntro;
+export default SheepPatternIntro;
 
 const styles = {
   container: {
@@ -177,17 +174,6 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
     zIndex: 1000,
     transition: "transform 0.2s",
-  },
-
-  Color: {
-    fontSize: "3.5rem",
-    //background: "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
-    background:
-      "linear-gradient(90deg, #FF4D4D, #FF9900, #FFFF33, #33FF33, #33CCFF, #9966FF, #FF66CC)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    textAlign: "center",
-    marginBottom: "1rem",
   },
   sheepLeft: {
     position: "absolute",

@@ -18,6 +18,8 @@ import GameMap from "./pages/GameMap";
 import SheepMemoryIntro from "./pages/SheepMemoryIntro";
 import SheepMemoryMatchGame from "./pages/SheepMemoryMatchGame";
 import RegisterPage from "./pages/RegisterPage";
+import SheepPatternRecognitionGame from "./pages/SheepPatternRecognitionGame";
+import SheepPatternIntro from "./pages/SheepPatternIntro";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,7 +31,7 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <Router basename="/sheepgame">
       <MusicProvider>
         <Routes>
           <Route
@@ -109,6 +111,22 @@ function App() {
             element={
               <PrivateRoute>
                 <SheepMemoryMatchGame />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sheep-pattern-intro"
+            element={
+              <PrivateRoute>
+                <SheepPatternIntro />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sheep-pattern"
+            element={
+              <PrivateRoute>
+                <SheepPatternRecognitionGame />
               </PrivateRoute>
             }
           />
